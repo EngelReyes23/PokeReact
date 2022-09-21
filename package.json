@@ -1,12 +1,25 @@
 {
-  "name": "react-pokedex",
+  "name": "pokereact",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky install",
+    "fmt": "prettier --write .",
+    "linter": "standard --fix ."
+  },
+  "lint-staged": {
+    "*.{js,cjs,jsx,ts,tsx,json,css,scss,md}": "prettier --write",
+    "*.{js,jsx,ts,tsx}": "standard --fix"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/standard/eslintrc.json",
+    "rules": {
+      "space-before-function-paren": "off"
+    }
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -16,6 +29,14 @@
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.1.0",
-    "vite": "^3.1.0"
+    "autoprefixer": "^10.4.12",
+    "lint-staged": "^13.0.3",
+    "postcss": "^8.4.16",
+    "prettier": "^2.7.1",
+    "prettier-plugin-tailwindcss": "^0.1.13",
+    "standard": "^17.0.0",
+    "tailwindcss": "^3.1.8",
+    "vite": "^3.1.0",
+    "husky": "^8.0.0"
   }
 }
