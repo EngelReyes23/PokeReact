@@ -1,7 +1,7 @@
 import { PokemonCard } from './PokemonCard'
 
 export const PokemonList = ({ pokemonList }) => (
-  <div className='mx-auto flex flex-wrap items-center justify-center gap-5'>
+  <div className='mx-auto flex flex-wrap items-center justify-center gap-5 dark:bg-gray-900'>
     {pokemonList.map((pokemon) => (
       <PokemonCard key={pokemon.id} pokemon={pokemon} />
     ))}

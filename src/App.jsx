@@ -17,13 +17,13 @@ function App () {
   if (UI.error) return <div>Something went wrong {UI.error}</div>
 
   return (
-    <div className='App'>
-      <h1 className='sticky top-0 z-10 mb-5 bg-white/90 py-3 text-center text-4xl font-bold text-purple-600'>
+    <>
+      <h1 className='sticky top-0 z-10 mb-5 select-none bg-white/95 py-3 text-center text-4xl font-bold text-purple-600'>
         Pokedux
       </h1>
 
       {UI.isLoading ? <Spinner /> : <PokemonList pokemonList={pokeState.pokemonList} />}
-    </div>
+    </>
   )
 }
 

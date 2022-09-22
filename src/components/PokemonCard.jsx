@@ -26,30 +26,37 @@ export const PokemonCard = ({ pokemon }) => {
   const { name, types, sprites } = pokemon
   const pokemonTypes = types.map((type) => type.type.name)
 
+  const styles = (percentage) => {
+    let background = ''
+
+    if (pokemonTypes.length > 1) {
+      background = `linear-gradient(0deg, ${pokemonTypes
+        .map((type) => typesColors[type].color + percentage)
+        .join(', ')})`
+    } else background = typesColors[pokemonTypes[0]].color + percentage
+
+    return {
+      background,
+      color: typesColors[pokemonTypes[0]].color
+    }
+  }
+
   return (
     <div
-      style={{
-        // si tiene mas de un tipo usa gradient, si solo tiene uno usa el color
-        background:
-          pokemonTypes.length > 1
-            ? `linear-gradient(0deg, ${pokemonTypes
-                .map((type) => typesColors[type].color + 50)
-                .join(', ')})`
-            : typesColors[pokemonTypes[0]].color + 50
-      }}
-      className='flex max-w-xs transform cursor-pointer flex-col items-center rounded-lg shadow transition-transform hover:scale-105'
+      style={styles(50)}
+      className='shadow-current/50  flex h-[250px] w-[250px] transform cursor-pointer flex-col items-center justify-center gap-2 rounded-xl transition-transform hover:scale-110'
     >
-      <div className='w-1/2'>
+      <div className='min-h-[150px] w-1/2 min-w-[150px] rounded-full' style={styles(50)}>
         <img
           alt={name}
-          className='w-full rounded-t-lg object-cover'
-          src={sprites.other['official-artwork'].front_default}
+          className='w-full scale-110 object-cover'
+          src={sprites.other['official-artwork'].front_default || sprites.front_default}
         />
       </div>
 
-      <h3 className='text-center text-xl font-semibold capitalize text-gray-900'>{name}</h3>
+      <h3 className='-mt-1 text-center text-2xl font-bold capitalize'>{name}</h3>
 
-      <div className='flex items-center justify-evenly gap-2 p-5'>
+      <div className='flex items-center justify-center gap-2'>
         {pokemonTypes.map((type) => (
           <Badge key={type} type={type} {...typesColors[type]} />
         ))}

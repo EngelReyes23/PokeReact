@@ -4,11 +4,9 @@ export const Badge = ({ type, icon, color }) => (
       color,
       backgroundColor: `${color}50`
     }}
-    className='flex max-w-full items-center gap-1 rounded-full px-3'
+    className='text-md flex items-center gap-1 rounded-full px-3 font-semibold'
   >
-    <div style={{ color }} className='text-md'>
-      {icon}
-    </div>
-    <span className='text-sm font-semibold'>{type}</span>
+    <div>{icon}</div>
+    <span>{type}</span>
   </div>
 )
