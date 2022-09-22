@@ -23,7 +23,9 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@reduxjs/toolkit": "^1.8.5",
+    "react-redux": "^8.0.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.17",
