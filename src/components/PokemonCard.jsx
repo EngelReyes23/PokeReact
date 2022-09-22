@@ -50,7 +50,13 @@ export const PokemonCard = ({ pokemon }) => {
         <img
           alt={name}
           className='w-full scale-110 object-cover'
-          src={sprites.other['official-artwork'].front_default || sprites.front_default}
+          src={
+            sprites.other['official-artwork'].front_default ||
+            sprites.other.home.front_default ||
+            sprites.front_shiny ||
+            sprites.front_default ||
+            ''
+          }
         />
       </div>
 

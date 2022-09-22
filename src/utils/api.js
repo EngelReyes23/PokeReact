@@ -1,8 +1,8 @@
 const API_URL = 'https://pokeapi.co/api/v2/'
 
 // consigue la lista de los pokemons de la api y todos sus detalles de cada pokemon
-export const getPokemonList = async () => {
-  const res = await fetch(`${API_URL}pokemon`)
+export const getPokemonList = async (offset = '0') => {
+  const res = await fetch(`${API_URL}pokemon?offset=${offset}`)
   const data = await res.json()
   const pokemonList = data.results
   const pokemonData = await Promise.all(
