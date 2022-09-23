@@ -44,7 +44,7 @@ export const PokemonCard = ({ pokemon }) => {
   return (
     <div
       style={styles(50)}
-      className='shadow-current/50 flex h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl transition-transform hover:scale-110'
+      className='animate__animated animate__fadeIn shadow-current/50 flex h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl transition-transform hover:scale-110'
     >
       <div className='min-h-[150px] w-1/2 min-w-[150px] rounded-full' style={styles(50)}>
         <img

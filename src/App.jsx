@@ -21,8 +21,9 @@ function App () {
   return (
     <div className='min-h-screen w-full transition-colors duration-700 dark:bg-gray-900'>
       <Header />
+      {UI.isLoading && <Spinner />}
       <Pagination />
-      {UI.isLoading ? <Spinner /> : <PokemonList pokemonList={pokeState.pokemonList} />}
+      <PokemonList pokemonList={pokeState.pokemonList} />
     </div>
   )
 }

@@ -7,8 +7,6 @@ export const Pagination = () => {
 
   const dispatch = useDispatch()
 
-  const offset = page * 20
-
   const handleNext = () => {
     setPage(page + 1)
   }
@@ -18,8 +16,8 @@ export const Pagination = () => {
   }
 
   useEffect(() => {
-    dispatch(fetchPokemonList(offset))
-  }, [offset])
+    dispatch(fetchPokemonList(page * 20))
+  }, [page])
 
   return (
     <div className='flex items-center justify-center'>
