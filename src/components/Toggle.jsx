@@ -8,10 +8,12 @@ export const Toggle = () => {
 
   return (
     <button
-      className='rounded-full p-2 text-yellow-400 transition-colors duration-700 hover:bg-gray-200 active:ring dark:text-white'
       onClick={() => dispatch(toggleDarkMode())}
+      type='button'
+      className='peer rounded-lg p-2.5 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:text-gray-400 dark:hover:bg-gray-800 dark:focus:ring-gray-800'
     >
-      {UI.isDarkMode ? <Dark className='h-8 w-8' /> : <Light className='h-8 w-8' />}
+      {!UI.isDarkMode ? <Dark className='h-6 w-6' /> : <Light className='h-6 w-6' />}
+      <span className='sr-only'>Toggle dark mode</span>
     </button>
   )
 }
