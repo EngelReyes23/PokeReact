@@ -6,18 +6,19 @@ const setDarkMode = (isDarkMode) => {
 }
 
 // verifica si SO esta en modo oscuro
-const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+const isDarkModeSO = window.matchMedia('(prefers-color-scheme: dark)').matches
 
 // verifica si en el localStorage hay un valor para el modo oscuro
 const isDarkModeLocalStorage = JSON.parse(window.localStorage.getItem('darkMode'))
 
-// activa el modo oscuro si el SO esta en modo oscuro o si el localStorage tiene el modo oscuro activado
-if (isDarkModeLocalStorage || isDarkMode) setDarkMode(true)
+// respeta el modo oscuro del SO solo si no hay un valor en el localStorage
+const isDarkMode = isDarkModeLocalStorage === null ? isDarkModeSO : isDarkModeLocalStorage
+setDarkMode(isDarkMode)
 
 const initialState = {
   isLoading: false,
   error: null,
-  isDarkMode: isDarkModeLocalStorage || isDarkMode
+  isDarkMode
 }
 
 export const UI = createSlice({

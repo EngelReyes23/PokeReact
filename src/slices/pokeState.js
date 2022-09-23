@@ -1,8 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-  pokemonList: [],
-  pokemon: null
+  pokemonDataList: [],
+  pokemon: null,
+  nextPage: null,
+  prevPage: null
 }
 
 export const pokeState = createSlice({
@@ -14,8 +16,11 @@ export const pokeState = createSlice({
     },
     setPokemon: (state, action) => {
       state.pokemon = action.payload
+    },
+    setPokeDataState: (state, action) => {
+      return { ...state, ...action.payload }
     }
   }
 })
 
-export const { setPokemon, setPokemonList } = pokeState.actions
+export const { setPokemon, setPokemonList, setPokeDataState } = pokeState.actions

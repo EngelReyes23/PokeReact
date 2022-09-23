@@ -1,14 +1,20 @@
-import { getPokemonList } from '../utils/api'
-import { setPokemonList } from './pokeState'
+import { getPokemonDataList } from '../utils/api'
+import { setPokeDataState } from './pokeState'
 import { setError, setLoading } from './UI'
 
-export const fetchPokemonList = (offset) => async (dispatch) => {
+export const fetchPokemonDataList = (url) => async (dispatch) => {
   dispatch(setLoading(true))
   try {
-    const pokemonList = await getPokemonList(offset)
-    dispatch(setPokemonList(pokemonList))
+    const data = await getPokemonDataList(url)
+
+    const StateData = {
+      nextPage: data.next,
+      prevPage: data.previous,
+      pokemonDataList: data.results
+    }
+
+    dispatch(setPokeDataState(StateData))
   } catch (error) {
-    console.log('🚀 ~ fetchPokemonList ~ error', error)
     dispatch(setError(error.message))
   } finally {
     dispatch(setLoading(false))

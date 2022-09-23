@@ -1,54 +1,57 @@
-import { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { fetchPokemonList } from '../slices/thunks'
+import { useDispatch, useSelector } from 'react-redux'
+
+// Local imports
+import { NextArrow, PrevArrow } from '../icons/'
+import { fetchPokemonDataList } from '../slices/thunks'
 
 export const Pagination = () => {
-  const [page, setPage] = useState(0)
+  const {
+    pokeState: { nextPage, prevPage }
+  } = useSelector((state) => state)
 
   const dispatch = useDispatch()
 
   const handleNext = () => {
-    setPage(page + 1)
+    dispatch(fetchPokemonDataList(nextPage))
   }
 
   const handlePrev = () => {
-    setPage(page - 1)
+    dispatch(fetchPokemonDataList(prevPage))
   }
 
-  useEffect(() => {
-    dispatch(fetchPokemonList(page * 20))
-  }, [page])
+  const handleReset = () => {
+    dispatch(fetchPokemonDataList())
+  }
 
   return (
-    <div className='flex items-center justify-center'>
-      <button
-        className='rounded-full p-2 text-yellow-400 transition-colors duration-700 hover:bg-gray-200 active:ring dark:text-white'
-        onClick={handlePrev}
-      >
-        Prev
-      </button>
-      <button
-        className='rounded-full p-2 text-yellow-400 transition-colors duration-700 hover:bg-gray-200 active:ring dark:text-white'
-        onClick={handleNext}
-      >
-        Next
-      </button>
-
-      <p className='text-2xl font-bold text-purple-600'>{page}</p>
-
-      <button
-        className='rounded-full p-2 text-yellow-400 transition-colors duration-700 hover:bg-gray-200 active:ring dark:text-white'
-        onClick={() => setPage(0)}
-      >
-        Reset
-      </button>
-
-      <button
-        className='rounded-full p-2 text-yellow-400 transition-colors duration-700 hover:bg-gray-200 active:ring dark:text-white'
-        onClick={() => setPage(10)}
-      >
-        10
-      </button>
-    </div>
+    <>
+      {prevPage && (
+        <button
+          onClick={handlePrev}
+          className='mr-3 inline-flex items-center rounded-lg border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 transition-colors duration-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          <PrevArrow />
+          Previous
+        </button>
+      )}
+      {/* eslint-disable-next-line multiline-ternary */}
+      {nextPage ? (
+        <button
+          onClick={handleNext}
+          className='inline-flex items-center rounded-lg border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 transition-colors duration-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Next
+          <NextArrow />
+        </button>
+      ) : (
+        <button
+          onClick={handleReset}
+          className='inline-flex items-center rounded-lg border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 transition-colors duration-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Next
+          <NextArrow />
+        </button>
+      )}
+    </>
   )
 }
