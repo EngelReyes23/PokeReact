@@ -23,10 +23,9 @@ function App () {
   if (UI.error) return <div>Something went wrong {UI.error}</div>
 
   return (
-    <div className='min-h-screen overflow-hidden bg-gray-100 transition-colors duration-700 dark:bg-gray-900'>
-      {UI.isLoading && <Spinner />}
-
+    <div className='min-h-screen bg-gray-100 transition-colors duration-700 dark:bg-gray-900'>
       <Header />
+      {UI.isLoading && <Spinner />}
 
       <div className='container mx-auto flex items-center justify-center bg-gray-100/95 pt-5 transition-colors duration-700 dark:bg-gray-900 md:justify-end'>
         <Pagination />
