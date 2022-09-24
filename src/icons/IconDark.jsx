@@ -1,4 +1,4 @@
-export const Dark = (props) => (
+export const IconDark = (props) => (
   <svg
     className='h-5 w-5'
     {...props}

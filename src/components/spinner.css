@@ -7,9 +7,10 @@
 .wrapper {
   display: grid;
   min-height: 100vh;
-  min-width: 100%;
+  min-width: 100vw;
   place-items: center;
   position: absolute;
+  overflow: hidden;
   top: 0;
 }
 

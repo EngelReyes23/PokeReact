@@ -16,9 +16,9 @@ const isDarkMode = isDarkModeLocalStorage === null ? isDarkModeSO : isDarkModeLo
 setDarkMode(isDarkMode)
 
 const initialState = {
-  isLoading: false,
+  isDarkMode,
   error: null,
-  isDarkMode
+  isLoading: false
 }
 
 export const UI = createSlice({

@@ -1,4 +1,4 @@
-export const NextArrow = () => (
+export const IconNextArrow = () => (
   <svg
     aria-hidden='true'
     className='ml-2 h-5 w-5'

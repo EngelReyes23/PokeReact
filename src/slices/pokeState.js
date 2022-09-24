@@ -1,21 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-  pokemonDataList: [],
-  pokemon: null,
+  prevPage: null,
   nextPage: null,
-  prevPage: null
+  pokemonData: null,
+  pokemonDataList: []
 }
 
 export const pokeState = createSlice({
   name: 'pokeState',
   initialState,
   reducers: {
-    setPokemonList: (state, action) => {
-      state.pokemonList = action.payload
-    },
-    setPokemon: (state, action) => {
-      state.pokemon = action.payload
+    setPokemonData: (state, action) => {
+      state.pokemonDat = action.payload
     },
     setPokeDataState: (state, action) => {
       return { ...state, ...action.payload }
@@ -23,4 +20,4 @@ export const pokeState = createSlice({
   }
 })
 
-export const { setPokemon, setPokemonList, setPokeDataState } = pokeState.actions
+export const { setPokemonData, setPokemonList, setPokeDataState } = pokeState.actions
