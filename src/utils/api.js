@@ -1,24 +1,24 @@
 const API_URL = 'https://pokeapi.co/api/v2'
 
-export const getPokemonDataList = async (url = `${API_URL}/pokemon?offset=0&limit=20`) => {
-  const res = await fetch(url)
-  return await res.json()
+const createAPI = (baseURL) => {
+  return new Proxy(
+    {},
+    {
+      get: (_, endpoint) => {
+        let url = `${baseURL}/${endpoint}`
+
+        return async (name = '', queryParams = '') => {
+          if (['next', 'previous'].includes(endpoint)) url = name
+          else url += `/${name}`
+
+          url += `?${new URLSearchParams(queryParams).toString()}`
+
+          const res = await fetch(url)
+          return res.json()
+        }
+      }
+    }
+  )
 }
 
-// consigue los detalles de un pokemon en especifico
-export const getPokemonData = async (pokemonURL) => {
-  const res = await fetch(pokemonURL)
-  return await res.json()
-}
-
-// consigue los detalles de un pokemon en especifico y sus evoluciones
-export const getPokemonWithEvolutions = async (pokemonName) => {
-  const res = await fetch(`${API_URL}evolution-chain/${pokemonName}`)
-  const data = await res.json()
-  return data
-}
-
-export const getPokemonList = async (pokemonDataList) => {
-  const promises = pokemonDataList.map(async (pokemon) => await getPokemonData(pokemon.url))
-  return await Promise.all(promises)
-}
+export const api = createAPI(API_URL)

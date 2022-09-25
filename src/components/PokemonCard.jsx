@@ -25,33 +25,34 @@ const typesColors = {
   electric: { color: '#E5C531', icon: <IconType letter='l' /> }
 }
 
+const styles = (pokemonTypes, percentage) => {
+  let background = ''
+
+  if (pokemonTypes.length > 1) {
+    background = `linear-gradient(0deg, ${pokemonTypes
+      .map((type) => typesColors[type].color + percentage)
+      .join(', ')})`
+  } else background = typesColors[pokemonTypes[0]].color + percentage
+
+  return {
+    background,
+    color: typesColors[pokemonTypes[0]].color
+  }
+}
+
+// #region Component
 export const PokemonCard = ({ pokemon }) => {
   const { name, types, sprites } = pokemon
   const pokemonTypes = types.map((type) => type.type.name)
 
-  const styles = (percentage) => {
-    let background = ''
-
-    if (pokemonTypes.length > 1) {
-      background = `linear-gradient(0deg, ${pokemonTypes
-        .map((type) => typesColors[type].color + percentage)
-        .join(', ')})`
-    } else background = typesColors[pokemonTypes[0]].color + percentage
-
-    return {
-      background,
-      color: typesColors[pokemonTypes[0]].color
-    }
-  }
-
   return (
     <div
-      style={styles(50)}
+      style={styles(pokemonTypes, 50)}
       className='animate__animated animate__fadeIn shadow-current/50 group flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl border-current py-2.5 transition-transform hover:scale-110 hover:border'
     >
       <div
         className='min-h-[150px] w-1/2 min-w-[150px] rounded-full border-current transition group-hover:border'
-        style={styles(50)}
+        style={styles(pokemonTypes, 50)}
       >
         <img
           alt={name}
@@ -78,3 +79,4 @@ export const PokemonCard = ({ pokemon }) => {
     </div>
   )
 }
+// #endregion Component

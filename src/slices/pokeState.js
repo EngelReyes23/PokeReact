@@ -12,10 +12,12 @@ export const pokeState = createSlice({
   initialState,
   reducers: {
     setPokemonData: (state, action) => {
-      state.pokemonDat = action.payload
+      state.pokemonData = action.payload
     },
     setPokeDataState: (state, action) => {
-      return { ...state, ...action.payload }
+      state.nextPage = action.payload.next
+      state.prevPage = action.payload.previous
+      state.pokemonDataList = action.payload.results
     }
   }
 })

@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 // Local imports
 import { IconNextArrow, IconPrevArrow } from '../icons/'
-import { fetchPokemonDataList } from '../slices/thunks'
+import { fetchNextPage, fetchPokemonDataList, fetchPrevPage } from '../slices/thunks'
 
 const scroll = () => {
   window.scrollTo({
@@ -21,12 +21,12 @@ export const Pagination = () => {
 
   const handleNext = () => {
     scroll()
-    dispatch(fetchPokemonDataList(nextPage))
+    dispatch(fetchNextPage(nextPage))
   }
 
   const handlePrev = () => {
     scroll()
-    dispatch(fetchPokemonDataList(prevPage))
+    dispatch(fetchPrevPage(prevPage))
   }
 
   const handleReset = () => {
