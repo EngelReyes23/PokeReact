@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Footer } from './components/Footer'
 
 // Local imports
+import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 import { Pagination } from './components/Pagination'
 import { PokemonList } from './components/PokemonList'

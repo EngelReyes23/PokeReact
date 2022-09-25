@@ -9,7 +9,7 @@
   min-height: 100vh;
   min-width: 100%;
   place-items: center;
-  position: absolute;
+  position: fixed;
   overflow: hidden;
   top: 0;
 }
@@ -22,7 +22,7 @@
   position: relative;
   overflow: hidden;
   border: 4px solid;
-  animation: shake 4s linear 0s infinite;
+  animation: shake 2s linear 0s infinite;
 }
 
 .pokeball:after {
@@ -46,7 +46,7 @@
   bottom: 18px;
   right: 18px;
   z-index: 1;
-  animation: capture 2s linear 0s infinite;
+  animation: capture 1s linear 0s infinite;
 }
 
 @keyframes capture {
@@ -62,29 +62,30 @@
 }
 
 @keyframes shake {
+  /* shake y pequeños saltos */
   0% {
-    transform: rotate(0deg);
+    transform: rotate(-10deg);
   }
   10% {
     transform: rotate(10deg);
   }
   20% {
-    transform: rotate(-10deg);
+    transform: rotate(0deg) translate(0, -30px);
   }
   30% {
-    transform: rotate(10deg);
+    transform: rotate(-10deg) translate(0, 0);
   }
   40% {
-    transform: rotate(-10deg);
+    transform: rotate(10deg);
   }
   50% {
-    transform: rotate(10deg);
-  }
-  60% {
     transform: rotate(-10deg);
   }
+  60% {
+    transform: rotate(0deg) translate(0, -30px);
+  }
   70% {
-    transform: rotate(10deg);
+    transform: rotate(10deg) translate(0, 0);
   }
   80% {
     transform: rotate(-10deg);
@@ -93,6 +94,6 @@
     transform: rotate(10deg);
   }
   100% {
-    transform: rotate(0deg);
+    transform: rotate(-10deg);
   }
 }
