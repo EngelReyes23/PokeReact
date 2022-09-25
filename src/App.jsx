@@ -2,11 +2,7 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 // Local imports
-import { Footer } from './components/Footer'
-import { Header } from './components/Header'
-import { Pagination } from './components/Pagination'
-import { PokemonList } from './components/PokemonList'
-import { Spinner } from './components/Spinner'
+import { Footer, Header, Pagination, PokemonList, Spinner } from './components/'
 import { fetchPokemonDataList } from './slices/thunks'
 
 function App () {
@@ -32,9 +28,11 @@ function App () {
       </div>
 
       <PokemonList pokemonDataList={pokemonDataList} />
+
       <div className='container mx-auto flex items-center justify-center bg-gray-100/95 py-3 pb-4 transition-colors duration-700 dark:bg-gray-900'>
         <Pagination />
       </div>
+
       <Footer />
     </div>
   )

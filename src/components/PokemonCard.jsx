@@ -1,6 +1,9 @@
 import { Badge } from './Badge'
 import { IconType } from './IconType'
 
+const imageNotFound =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
+
 const typesColors = {
   bug: { color: '#94BC4A', icon: <IconType letter='b' /> },
   ice: { color: '#70CBD4', icon: <IconType letter='i' /> },
@@ -44,9 +47,12 @@ export const PokemonCard = ({ pokemon }) => {
   return (
     <div
       style={styles(50)}
-      className='animate__animated animate__fadeIn shadow-current/50 flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl py-3 transition-transform hover:scale-110'
+      className='animate__animated animate__fadeIn shadow-current/50 group flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl border-current py-2.5 transition-transform hover:scale-110 hover:border'
     >
-      <div className='min-h-[150px] w-1/2 min-w-[150px] rounded-full' style={styles(50)}>
+      <div
+        className='min-h-[150px] w-1/2 min-w-[150px] rounded-full border-current transition group-hover:border'
+        style={styles(50)}
+      >
         <img
           alt={name}
           className='w-full scale-110 object-cover'
@@ -55,12 +61,14 @@ export const PokemonCard = ({ pokemon }) => {
             sprites.other.home.front_default ||
             sprites.front_shiny ||
             sprites.front_default ||
-            ''
+            imageNotFound
           }
         />
       </div>
 
-      <h3 className='-mt-1 text-center text-2xl font-bold capitalize'>{name}</h3>
+      <p className='-mt-1 text-center text-2xl font-semibold capitalize transition group-hover:font-bold'>
+        {name}
+      </p>
 
       <div className='flex items-center justify-center gap-2'>
         {pokemonTypes.map((type) => (
