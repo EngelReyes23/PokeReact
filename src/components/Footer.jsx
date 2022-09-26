@@ -25,7 +25,7 @@ const urlList = [
 
 export const Footer = () => {
   return (
-    <footer className='w-full select-none bg-gray-200 p-3 text-center transition-colors duration-700 dark:bg-gray-800'>
+    <footer className='w-full select-none bg-gray-200 p-3 text-center transition-colors duration-500 dark:bg-gray-800'>
       <div className='flex items-center justify-center gap-5 p-1'>
         {urlList.map((url) => (
           <a
@@ -39,13 +39,13 @@ export const Footer = () => {
           </a>
         ))}
       </div>
-      <p className='text-sm dark:text-gray-300 '>
+      <p className='text-sm transition-colors duration-500 dark:text-gray-300 '>
         Made by{' '}
         <a
           href='https://github.com/EngelReyes23'
           target='_blank'
           rel='noopener noreferrer'
-          className='text-blue-600 decoration-double underline-offset-2 hover:underline dark:text-blue-400'
+          className='text-blue-600 decoration-double underline-offset-2 transition-colors duration-500 hover:underline dark:text-blue-400'
         >
           Engel Reyes
         </a>

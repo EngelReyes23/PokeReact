@@ -22,9 +22,10 @@
     }
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^1.8.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@reduxjs/toolkit": "^1.8.5",
+    "react-headless-pagination": "^0.2.1",
     "react-redux": "^8.0.2"
   },
   "devDependencies": {
