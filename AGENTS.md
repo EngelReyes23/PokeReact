@@ -40,9 +40,8 @@
 - [x] **Phase 2 — "Ver más detalles" link** navigates to `/pokemon/:name`, closes modal. Commit d04a02d.
 - [x] **Phase 3 — Detail page + evolution chain**: thunk `fetchEvolutionChain`, chains /pokemon-species -> /evolution-chain, flatten tree (handles branching e.g. Eevee 9 forms), Spanish flavor text, stat bars, abilities, "Volver", spinner + error/retry. Commit 18f664e.
 - [x] **Phase 4 — Search**: `searchTerm` + `allPokemonNames` in pokeState, thunk `fetchAllPokemonNames` (/pokemon?limit=100000), persisted in IndexedDB (hydrated in main.jsx), Header search input with 300ms debounce + clear button, client-side case-insensitive filter, empty state, navigates to `/` when searching from another route. Commit 3cb7c83. NOTE: the 20-result cap was removed in Phase 6 (client-side pagination over the filtered subset).
+- [x] **Phase 5.1 — Page cache + fetch optimization**: `pageCache` in pokeState, cache-first check before fetching a page, `?page=N` persisted in URL (return from detail restores the exact page without refetch, scroll preserved), per-card fetches skip when `pokemonCache` already has the detail, sprite `<img>` with `loading="lazy"` + `decoding="async"`, AbortController cancels in-flight card fetches when unmounted. Commit 9d346d4.
 - [x] **Phase 6 — Filters**: URL is the single source of truth (`?search=&type=fire,flying&gen=1&sort=id&page=N`). New `useFilteredList` hook = pipeline filter (search ∩ type intersection ∩ generation) -> sort (id/name/total-stats) -> paginate client-side over the full subset (20/page). New `FilterBar.jsx`: type chips (multi, with IconType + aria-pressed), generation chips (1-9), sort select, results counter, "Limpiar filtros". `typeCache` + `generationCache` in pokeState, thunks `fetchTypeList`/`fetchGenerationList` (cache-first), persisted in IndexedDB + hydrated in main.jsx. Home hydrates Redux from URL params on mount/change. `usePagination` now reads/writes `?page=N` and merges with other params (no longer resets). Sort by stat only uses already-cached pokemon (uncached go last, no mass fetches). Modal "Ver más detalles" and Detail "Volver" preserve the full query string. Commit 0e2f8a4.
-- [ ] **Phase 5.1 — Page cache + fetch optimization**
-- [ ] **Phase 6 — (COMPLETADO arriba; quedan pendientes: filtros UI polish)**
 - [ ] **Phase 7 — Extras**
 
 ## Known notes / decisions
@@ -52,24 +51,6 @@
 - Pages were not cached: returning from `/pokemon/:name` refetched the page and reset to page 1. To be fixed in Phase 5.1 (pageCache + `?page=N` in URL).
 
 ## Remaining phases
-
-### Phase 5.1 — Page cache + per-card fetch optimization
-
-1. `pageCache: { [page]: string[] }` in pokeState; before fetching a page, use the cache and skip the network call if present.
-2. Persist current page in the URL as `?page=N`; on mount read it so returning from a detail page restores the exact page (not page 1) with no refetch. Preserve scroll position if feasible.
-3. Optimize per-card fetches: before any PokemonCard detail/sprite fetch, check `pokemonCache` and skip if present; seed cache from list data as in Phase 1.
-4. Add `loading="lazy"` and `decoding="async"` to sprite `<img>` so off-screen images aren't requested.
-5. Optional: AbortController to cancel in-flight fetches for cards that unmount while filtering.
-6. Verify in DevTools: load page 3 -> open a Pokémon -> back = still page 3, no refetch; typing "char" then clearing = minimal/cached requests.
-
-### Phase 6 — Filters (search + pagination over filtered subset + URL state)
-
-1. Filter by type (multi-select, reuse Badge/IconType, data from `/type/{type}`, cache in typeCache + IndexedDB), by generation (`/generation/{id}`), and sort (id, name, total base stat).
-2. Combine with the search box (search + filters stack).
-3. When any filter OR search is active, working list = filtered subset, then **paginate over that subset client-side** (removes the Phase 4 20-result cap).
-4. Sync all state in the URL: `?search=char&type=fire&gen=1&sort=id&page=2`; hydrate from URL on mount.
-5. UI: new `components/FilterBar.jsx` with type chips, "Limpiar filtros", results counter ("42 Pokémon").
-6. State: pokeState (`activeTypes`, `generation`, `sortBy`); Home.jsx pipeline filter -> sort -> paginate; PaginationComponent paginates over the filtered list.
 
 ### Phase 7 — Extra improvements (iterative, ask before each unless noted)
 
