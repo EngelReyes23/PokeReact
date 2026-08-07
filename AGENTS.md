@@ -1,33 +1,86 @@
-# AGENTS.md
+# AGENTS.md — PokeReact (Pokedux)
 
-## Developer Commands
+> Instructions for AI coding agents (OpenCode). Read this fully before doing anything.
 
-- `npm run dev` - Starts the development server
-- `npm run build` - Builds the production application
-- `npm run preview` - Preview the built application
-- `npm run fmt` - Formats all files with Prettier
-- `npm run linter` - Runs Standard ESLint with fixes
+## Language
 
-## Project Structure
+- Think/reason and write code + code comments in **English**.
+- Write all **answers, explanations, plans and commit messages in SPANISH**.
 
-- Main entry: `src/main.jsx` → `src/App.jsx`
-- Components: `src/components/`
-  - `PokemonCard.jsx`, `PokemonList.jsx`, etc.
-- Pages: `src/pages/Home.jsx`
-- State management: Redux Toolkit in `src/slices/`
-- API: `src/utils/api.js`
-- Icons: `src/icons/` with index.js
-- Build: Vite configured in `vite.config.js`
-- CSS: Tailwind CSS with PostCSS processing
+## Golden rules
 
-## Tooling Notes
+- Do **NOT** rewrite the app from scratch and do **NOT** migrate to TypeScript.
+- Do **NOT** read framer-motion or other library internals inside `node_modules` — treat libraries as black boxes.
+- Follow the existing code style and folder structure.
+- Prefer no new dependency unless it clearly pays off — state the bundle cost first.
+- Work **one phase at a time**, each on its own git branch, and **commit at the end** with a clear Spanish message.
+- After each phase: run `npm run build` + linter (`standard --fix`). No React warnings (keys, useEffect deps).
+- Use Plan mode for designing; Build mode for coding/bug-fixing.
 
-- JavaScript modules (`.mjs` format) with Standard ESLint
-- Prettier formatting for JS/TS/JSON/CSS/MD files
-- Tailwind CSS with PostCSS processing
-- React plugin via `@vitejs/plugin-react`
-- Husky pre-commit hooks installed via `npm run prepare`
+## Stack
 
-## Testing
+- React + Vite (dev server on localhost:5173). Redux Toolkit: `slices/pokeState.js`, `slices/thunks.js`, `slices/UI.js`, `store/`.
+- react-router-dom, route `/pokemon/:name` -> `pages/PokemonDetail.jsx`.
+- framer-motion (installed in Phase 1).
+- Persistence: IndexedDB via idb-keyval (`utils/cache.js`), hydrated in `main.jsx` before render.
+- Components: PokemonCard, PokemonList, PaginationComponent, Header, Badge, IconType, Spinner, PokemonCardSkeleton, Toggle, PokemonModal.
+- Pages: Home.jsx, PokemonDetail.jsx. Helpers: `utils/api.js`, `utils/evolution.js`, `utils/cache.js`.
 
-No test framework or test files present in the repository. Testing is not currently configured.
+## Branches (do NOT reimplement existing work)
+
+- `feature/detail-modal` (A) — modal overlay. Was the reference for Phase 1.
+- `feature/detail-state` (B) — conditional full-screen via state. Reference only.
+- `feature/detail-router` (C) — real routing, working PokemonDetail. Base branch.
+- `feature/pokemon-modal` — **current working branch** (descends from cache + router). All phases live here.
+
+## Progress
+
+- [x] **Phase 5 (base) — Cache**: `pokemonCache` in pokeState + persistence (idb-keyval). Check cache before fetch.
+- [x] **Phase 1 — Card flies to center as modal** (deterministic FLIP with framer-motion: getBoundingClientRect + x/y/scale). Open + close (X/Esc/overlay), scroll lock, visible fly-back. Commit 7ecb7a7.
+- [x] **Phase 2 — "Ver más detalles" link** navigates to `/pokemon/:name`, closes modal. Commit d04a02d.
+- [x] **Phase 3 — Detail page + evolution chain**: thunk `fetchEvolutionChain`, chains /pokemon-species -> /evolution-chain, flatten tree (handles branching e.g. Eevee 9 forms), Spanish flavor text, stat bars, abilities, "Volver", spinner + error/retry. Commit 18f664e.
+- [x] **Phase 4 — Search**: `searchTerm` + `allPokemonNames` in pokeState, thunk `fetchAllPokemonNames` (/pokemon?limit=100000), persisted in IndexedDB (hydrated in main.jsx), Header search input with 300ms debounce + clear button, client-side case-insensitive filter, empty state, navigates to `/` when searching from another route. Commit 3cb7c83. NOTE: filtered results capped at 20 until pagination-over-filtered is added in Phase 6.
+- [ ] **Phase 5.1 — Page cache + fetch optimization (NEXT)**
+- [ ] **Phase 6 — Filters**
+- [ ] **Phase 7 — Extras**
+
+## Known notes / decisions
+
+- Search text filtering is **100% client-side** against `allPokemonNames` (already in memory) -> typing does NOT consume network data. The 300ms debounce only reduces React re-renders.
+- BUT network requests DO appear while typing because each rendered `PokemonCard` fetches its own detail/sprite on mount. To be fixed in Phase 5.1 (cache check per card + lazy images).
+- Pages were not cached: returning from `/pokemon/:name` refetched the page and reset to page 1. To be fixed in Phase 5.1 (pageCache + `?page=N` in URL).
+
+## Remaining phases
+
+### Phase 5.1 — Page cache + per-card fetch optimization
+
+1. `pageCache: { [page]: string[] }` in pokeState; before fetching a page, use the cache and skip the network call if present.
+2. Persist current page in the URL as `?page=N`; on mount read it so returning from a detail page restores the exact page (not page 1) with no refetch. Preserve scroll position if feasible.
+3. Optimize per-card fetches: before any PokemonCard detail/sprite fetch, check `pokemonCache` and skip if present; seed cache from list data as in Phase 1.
+4. Add `loading="lazy"` and `decoding="async"` to sprite `<img>` so off-screen images aren't requested.
+5. Optional: AbortController to cancel in-flight fetches for cards that unmount while filtering.
+6. Verify in DevTools: load page 3 -> open a Pokémon -> back = still page 3, no refetch; typing "char" then clearing = minimal/cached requests.
+
+### Phase 6 — Filters (search + pagination over filtered subset + URL state)
+
+1. Filter by type (multi-select, reuse Badge/IconType, data from `/type/{type}`, cache in typeCache + IndexedDB), by generation (`/generation/{id}`), and sort (id, name, total base stat).
+2. Combine with the search box (search + filters stack).
+3. When any filter OR search is active, working list = filtered subset, then **paginate over that subset client-side** (removes the Phase 4 20-result cap).
+4. Sync all state in the URL: `?search=char&type=fire&gen=1&sort=id&page=2`; hydrate from URL on mount.
+5. UI: new `components/FilterBar.jsx` with type chips, "Limpiar filtros", results counter ("42 Pokémon").
+6. State: pokeState (`activeTypes`, `generation`, `sortBy`); Home.jsx pipeline filter -> sort -> paginate; PaginationComponent paginates over the filtered list.
+
+### Phase 7 — Extra improvements (iterative, ask before each unless noted)
+
+- **Favorites (persisted)**: `favorites: string[]` in pokeState with `toggleFavorite`, persisted in IndexedDB + hydrated. Heart button on PokemonCard and inside PokemonModal (stopPropagation so it doesn't open the modal; filled/outline; aria-pressed, keyboard focusable). "Solo favoritos" chip in FilterBar/Header, combines with search/filters, reflected in URL (`?fav=1`), empty state "Aún no tienes favoritos".
+- Prefetch-on-hover for instant modal open.
+- Reuse PokemonCardSkeleton during fetch.
+- Accessibility: aria-expanded, keyboard Enter/Space, visible focus.
+- Persist theme (Toggle.jsx).
+- Stats radar chart, type-effectiveness table, list virtualization (react-window), image lazy loading, retry/error boundary.
+
+## Definition of done (per phase)
+
+- Build clean + linter OK, no React warnings.
+- Tested in dev server; relevant state persists after reload where applicable.
+- Committed on its own branch with a clear Spanish message.
