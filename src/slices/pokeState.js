@@ -6,7 +6,8 @@ const initialState = {
   nextPage: null,
   pokemonData: null,
   pokemonDataList: [],
-  expandedPokemonId: null,
+  openPokemonId: null,
+  activePokemon: null,
   pokemonCache: {}
 }
 
@@ -23,8 +24,11 @@ export const pokeState = createSlice({
       state.prevPage = action.payload.previous
       state.pokemonDataList = action.payload.results
     },
-    setExpandedPokemonId: (state, action) => {
-      state.expandedPokemonId = action.payload
+    setOpenPokemonId: (state, action) => {
+      state.openPokemonId = action.payload
+    },
+    setActivePokemon: (state, action) => {
+      state.activePokemon = action.payload
     },
     setPokemonCache: (state, action) => {
       const { name, key, data } = action.payload
@@ -41,7 +45,8 @@ export const {
   setPokemonData,
   setPokemonList,
   setPokeDataState,
-  setExpandedPokemonId,
+  setOpenPokemonId,
+  setActivePokemon,
   setPokemonCache,
   hydrateCache
 } = pokeState.actions

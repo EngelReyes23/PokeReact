@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.5",
+    "framer-motion": "^13.0.0",
     "idb-keyval": "^6.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

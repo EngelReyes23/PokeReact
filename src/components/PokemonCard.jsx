@@ -1,6 +1,10 @@
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
 import { IconType } from './IconType'
+import { setOpenPokemonId, setActivePokemon, setPokemonCache } from '../slices/pokeState'
+import { fetchPokemonDetail } from '../slices/thunks'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
@@ -41,14 +45,48 @@ const styles = (pokemonTypes, percentage) => {
   }
 }
 
+const imageFrom = (sprites) =>
+  sprites.other['official-artwork'].front_default ||
+  sprites.other.home.front_default ||
+  sprites.front_shiny ||
+  sprites.front_default ||
+  imageNotFound
+
 // #region Component
 export const PokemonCard = ({ pokemon }) => {
-  const { name, types, sprites } = pokemon
+  const { id, name, types, sprites } = pokemon
   const pokemonTypes = types.map((type) => type.type.name)
+  const dispatch = useDispatch()
+
+  const { openPokemonId, pokemonCache: cache } = useSelector((state) => state.pokeState)
+  const cached = Boolean(cache?.[name]?.pokemon)
+
+  const open = () => {
+    dispatch(setActivePokemon(pokemon))
+    dispatch(setOpenPokemonId(id))
+    // La lista ya trae los datos completos: se siembra la caché para reutilizarla
+    if (!cached) dispatch(setPokemonCache({ name, key: 'pokemon', data: pokemon }))
+  }
+
+  // Si el detalle no está cacheado, se busca al abrir el modal
+  useEffect(() => {
+    if (openPokemonId === id && !cached) {
+      dispatch(fetchPokemonDetail(name))
+    }
+  }, [openPokemonId, cached, name, dispatch])
 
   return (
-    <Link
-      to={`/pokemon/${name}`}
+    <motion.div
+      layoutId={`pokemon-${id}`}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          open()
+        }
+      }}
+      role='button'
+      tabIndex={0}
       style={styles(pokemonTypes, 50)}
       className='animate__animated animate__fadeIn shadow-current/50 group flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl border-current py-2.5 transition-transform hover:scale-110 hover:border'
     >
@@ -56,17 +94,7 @@ export const PokemonCard = ({ pokemon }) => {
         className='min-h-[150px] w-1/2 min-w-[150px] rounded-full border-current transition group-hover:border'
         style={styles(pokemonTypes, 50)}
       >
-        <img
-          alt={name}
-          className='w-full scale-110 object-cover'
-          src={
-            sprites.other['official-artwork'].front_default ||
-            sprites.other.home.front_default ||
-            sprites.front_shiny ||
-            sprites.front_default ||
-            imageNotFound
-          }
-        />
+        <img alt={name} className='w-full scale-110 object-cover' src={imageFrom(sprites)} />
       </div>
 
       <p className='-mt-1 text-center text-2xl font-semibold capitalize transition group-hover:font-bold'>
@@ -78,7 +106,7 @@ export const PokemonCard = ({ pokemon }) => {
           <Badge key={type} type={type} {...typesColors[type]} />
         ))}
       </div>
-    </Link>
+    </motion.div>
   )
 }
 // #endregion Component
