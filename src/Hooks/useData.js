@@ -8,11 +8,12 @@ export const useData = () => {
   const isLoading = useSelector((state) => state.UI.isLoading)
   const error = useSelector((state) => state.UI.error)
   const pokemonDataList = useSelector((state) => state.pokeState.pokemonDataList)
+  const searchTerm = useSelector((state) => state.pokeState.searchTerm)
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(fetchPokemonDataList(localPage))
-  }, [])
+    if (!searchTerm) dispatch(fetchPokemonDataList(localPage))
+  }, [searchTerm, dispatch])
 
   return {
     error,

@@ -9,7 +9,9 @@ const initialState = {
   openPokemonId: null,
   activePokemon: null,
   pokemonSourceRect: null,
-  pokemonCache: {}
+  pokemonCache: {},
+  searchTerm: '',
+  allPokemonNames: []
 }
 
 export const pokeState = createSlice({
@@ -41,6 +43,12 @@ export const pokeState = createSlice({
     },
     hydrateCache: (state, action) => {
       state.pokemonCache = action.payload
+    },
+    setSearchTerm: (state, action) => {
+      state.searchTerm = action.payload
+    },
+    setAllPokemonNames: (state, action) => {
+      state.allPokemonNames = action.payload
     }
   }
 })
@@ -53,5 +61,7 @@ export const {
   setActivePokemon,
   setPokemonSourceRect,
   setPokemonCache,
-  hydrateCache
+  hydrateCache,
+  setSearchTerm,
+  setAllPokemonNames
 } = pokeState.actions

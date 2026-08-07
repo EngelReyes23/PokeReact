@@ -5,12 +5,15 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
 import { store } from './store'
-import { loadCache } from './utils/cache'
-import { hydrateCache } from './slices/pokeState'
+import { loadCache, loadNames } from './utils/cache'
+import { hydrateCache, setAllPokemonNames } from './slices/pokeState'
 
 const bootstrap = async () => {
   const cache = await loadCache()
   store.dispatch(hydrateCache(cache))
+
+  const names = await loadNames()
+  if (names.length) store.dispatch(setAllPokemonNames(names))
 
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

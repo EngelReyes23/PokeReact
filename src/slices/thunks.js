@@ -1,7 +1,7 @@
 import { api } from '../utils/api'
-import { setPokeDataState, setPokemonCache } from './pokeState'
+import { setPokeDataState, setPokemonCache, setAllPokemonNames } from './pokeState'
 import { setError, setLoading } from './UI'
-import { saveCache } from '../utils/cache'
+import { saveCache, saveNames } from '../utils/cache'
 import { flattenChain, extractChainId } from '../utils/evolution'
 
 export const fetchPokemonDataList = (page = 0) => {
@@ -51,6 +51,26 @@ export const fetchPokemonDetail = (name, key = 'pokemon') => {
       throw error
     } finally {
       dispatch(setLoading(false))
+    }
+  }
+}
+
+// PokeAPI no soporta búsqueda parcial por nombre: trae la lista completa una vez
+// y se filtra en cliente. La lista se persiste y se comprueba antes de pedirla.
+export const fetchAllPokemonNames = () => {
+  return async (dispatch, getState) => {
+    const existing = getState().pokeState.allPokemonNames
+    if (existing.length) return existing
+
+    try {
+      const data = await api.pokemon('', { limit: 100000 })
+      const names = data.results
+      dispatch(setAllPokemonNames(names))
+      setTimeout(() => saveNames(names), PERSIST_AFTER_MS)
+      return names
+    } catch (error) {
+      dispatch(setError(error.message))
+      throw error
     }
   }
 }
