@@ -54,6 +54,9 @@ export const pokeState = createSlice({
     setSearchTerm: (state, action) => {
       state.searchTerm = action.payload
     },
+    setAllPokemonNames: (state, action) => {
+      state.allPokemonNames = action.payload
+    },
     setPageCache: (state, action) => {
       const { page, data } = action.payload
       state.pageCache[page] = data
@@ -86,7 +89,6 @@ export const pokeState = createSlice({
 
 export const {
   setPokemonData,
-  setPokemonList,
   setPokeDataState,
   setOpenPokemonId,
   setActivePokemon,

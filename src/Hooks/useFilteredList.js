@@ -51,10 +51,12 @@ export const useFilteredList = () => {
     if (filtersLoading) return []
 
     const term = searchTerm.trim().toLowerCase()
-    let list = allPokemonNames
+    const list = Array.isArray(allPokemonNames) ? allPokemonNames : []
+
+    let filtered = list
 
     if (term) {
-      list = list.filter(({ name }) => name.toLowerCase().includes(term))
+      filtered = filtered.filter(({ name }) => name.toLowerCase().includes(term))
     }
 
     if (activeTypes.length) {
@@ -62,15 +64,15 @@ export const useFilteredList = () => {
         const entries = typeCache[type] || []
         return new Set(entries.map(({ name }) => name))
       })
-      list = list.filter(({ name }) => typeSets.every((set) => set.has(name)))
+      filtered = filtered.filter(({ name }) => typeSets.every((set) => set.has(name)))
     }
 
     if (generation) {
       const genSet = new Set((generationCache[generation] || []).map(({ name }) => name))
-      list = list.filter(({ name }) => genSet.has(name))
+      filtered = filtered.filter(({ name }) => genSet.has(name))
     }
 
-    const sorted = [...list]
+    const sorted = [...filtered]
 
     if (sortBy === 'name') {
       sorted.sort((a, b) => a.name.localeCompare(b.name))
