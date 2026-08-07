@@ -2,6 +2,7 @@ import { api } from '../utils/api'
 import { setPokeDataState, setPokemonCache } from './pokeState'
 import { setError, setLoading } from './UI'
 import { saveCache } from '../utils/cache'
+import { flattenChain, extractChainId } from '../utils/evolution'
 
 export const fetchPokemonDataList = (page = 0) => {
   return async (dispatch) => {
@@ -22,6 +23,16 @@ export const fetchPokemonDataList = (page = 0) => {
 
 const PERSIST_AFTER_MS = 500
 
+const persistCache = (dispatch, cache, name, key, data) => {
+  dispatch(setPokemonCache({ name, key, data }))
+
+  const persistentCache = {
+    ...cache,
+    [name]: { ...(cache?.[name] || {}), [key]: data }
+  }
+  setTimeout(() => saveCache(persistentCache), PERSIST_AFTER_MS)
+}
+
 export const fetchPokemonDetail = (name, key = 'pokemon') => {
   return async (dispatch, getState) => {
     const cache = getState().pokeState.pokemonCache
@@ -33,21 +44,58 @@ export const fetchPokemonDetail = (name, key = 'pokemon') => {
 
     try {
       const data = await api.pokemon(name)
-      dispatch(setPokemonCache({ name, key, data }))
-
-      // Persistir sin bloquear el flujo inmediato
-      const persistentCache = {
-        ...cache,
-        [name]: { ...(cache?.[name] || {}), [key]: data }
-      }
-      setTimeout(() => saveCache(persistentCache), PERSIST_AFTER_MS)
-
+      persistCache(dispatch, cache, name, key, data)
       return data
     } catch (error) {
       dispatch(setError(error.message))
       throw error
     } finally {
       dispatch(setLoading(false))
+    }
+  }
+}
+
+// Cadea /pokemon/{name} -> /pokemon-species/{name} (flavor/es + evolution_chain.url)
+// -> /evolution-chain/{id} y la aplana en una lista ordenada con condiciones.
+export const fetchEvolutionChain = (name) => {
+  return async (dispatch, getState) => {
+    const cache = getState().pokeState.pokemonCache
+    const cachedSpecies = cache?.[name]?.species
+    const cachedChain = cache?.[name]?.evolutionChain
+
+    let species = cachedSpecies
+    if (!species) {
+      dispatch(setLoading(true))
+      try {
+        species = await api['pokemon-species'](name)
+        persistCache(dispatch, cache, name, 'species', species)
+      } catch (error) {
+        dispatch(setError(error.message))
+        throw error
+      } finally {
+        dispatch(setLoading(false))
+      }
+    }
+
+    let chainDetail = cachedChain
+    if (!chainDetail && species.evolution_chain?.url) {
+      const chainId = extractChainId(species.evolution_chain.url)
+      dispatch(setLoading(true))
+      try {
+        chainDetail = await api['evolution-chain'](chainId)
+        persistCache(dispatch, cache, name, 'evolutionChain', chainDetail)
+      } catch (error) {
+        dispatch(setError(error.message))
+        throw error
+      } finally {
+        dispatch(setLoading(false))
+      }
+    }
+
+    return {
+      species,
+      chainDetail,
+      evolution: flattenChain(chainDetail?.chain, getState().pokeState.pokemonCache)
     }
   }
 }
