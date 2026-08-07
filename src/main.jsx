@@ -5,13 +5,22 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
 import { store } from './store'
+import { loadCache } from './utils/cache'
+import { hydrateCache } from './slices/pokeState'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
-  </React.StrictMode>
-)
+const bootstrap = async () => {
+  const cache = await loadCache()
+  store.dispatch(hydrateCache(cache))
+
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </React.StrictMode>
+  )
+}
+
+bootstrap()
