@@ -259,7 +259,10 @@ export const PokemonModal = () => {
 
           <Link
             to={`/pokemon/${name}`}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              close()
+            }}
             className='mt-2 inline-block font-semibold text-purple-600 underline-offset-2 hover:underline dark:text-purple-400'
           >
             Ver más detalles →
