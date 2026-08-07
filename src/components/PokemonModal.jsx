@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useAnimate, usePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
 import { IconType } from './IconType'
-import { setOpenPokemonId, setActivePokemon } from '../slices/pokeState'
+import { setOpenPokemonId, setActivePokemon, setPokemonSourceRect } from '../slices/pokeState'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
@@ -39,6 +39,9 @@ const STAT_LABELS = {
   speed: 'Spe'
 }
 
+const FLY_TRANSITION = { type: 'spring', stiffness: 300, damping: 30 }
+const FADE_TRANSITION = { duration: 0.2, ease: 'easeOut' }
+
 const imageFrom = (sprites) =>
   sprites?.other?.['official-artwork']?.front_default ||
   sprites?.other?.home?.front_default ||
@@ -62,21 +65,60 @@ const StatSkeleton = () => (
 export const PokemonModal = () => {
   const dispatch = useDispatch()
   const pokemon = useSelector((state) => state.pokeState.activePokemon)
-  const [snapshot, setSnapshot] = useState(null)
+  const sourceRect = useSelector((state) => state.pokeState.pokemonSourceRect)
+  const [isPresent, safeToRemove] = usePresence()
+  const [scope, animate] = useAnimate()
+  const overlayRef = useRef(null)
 
-  // Congela el pokémon mientras el modal hace el exit, aunque ya se haya cerrado
+  // Devuelve el transform (x/y/scale) que lleva el centro del modal hasta una caja dada
+  const flyToBox = (fromRect, rect) => {
+    const dx = fromRect.left + fromRect.width / 2 - (rect.left + rect.width / 2)
+    const dy = fromRect.top + fromRect.height / 2 - (rect.top + rect.height / 2)
+    return {
+      x: dx,
+      y: dy,
+      scaleX: fromRect.width / rect.width,
+      scaleY: fromRect.height / rect.height
+    }
+  }
+
+  // Al montar: arranca desde el rect de la card y vuela al centro
+  useLayoutEffect(() => {
+    const el = scope.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    if (sourceRect) {
+      const from = { ...flyToBox(sourceRect, rect), opacity: 1 }
+      animate(el, from, { duration: 0 })
+      window.requestAnimationFrame(() => {
+        animate(el, { x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1 }, FLY_TRANSITION)
+      })
+    } else {
+      animate(el, { x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1 }, FLY_TRANSITION)
+    }
+
+    if (overlayRef.current) {
+      animate(overlayRef.current, { opacity: 1 }, FADE_TRANSITION)
+    }
+  }, [])
+
+  // Al salir (openPokemonId -> null): vuela de vuelta a la fuente y luego desmonta
   useEffect(() => {
-    if (pokemon) setSnapshot(pokemon)
-  }, [pokemon])
+    if (isPresent) return
+    const el = scope.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const target = sourceRect ? flyToBox(sourceRect, rect) : { x: 0, y: 0, scaleX: 1, scaleY: 1 }
+    if (overlayRef.current) animate(overlayRef.current, { opacity: 0 }, FADE_TRANSITION)
+    animate(el, { ...target, opacity: 0 }, FLY_TRANSITION).then(() => {
+      safeToRemove()
+      dispatch(setActivePokemon(null))
+      dispatch(setPokemonSourceRect(null))
+    })
+  }, [isPresent])
 
-  const data = pokemon || snapshot
-  if (!data) return null
-
-  const { id, name, types, sprites } = data
-  const pokemonTypes = types?.map((type) => type.type.name) || []
-  const typeColor = typesColors[pokemonTypes[0]]?.color || '#94BC4A'
   const close = () => {
-    dispatch(setActivePokemon(null))
+    // Solo limpia openPokemonId: el exit vuela la card y AnimatePresence la desmonta
     dispatch(setOpenPokemonId(null))
   }
 
@@ -92,31 +134,34 @@ export const PokemonModal = () => {
   // Cerrar con la tecla Escape
   useEffect(() => {
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        dispatch(setActivePokemon(null))
-        dispatch(setOpenPokemonId(null))
-      }
+      if (e.key === 'Escape') close()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [dispatch])
+  })
+
+  if (!pokemon) return null
+
+  const { name, types, sprites } = pokemon
+  const pokemonTypes = types?.map((type) => type.type.name) || []
+  const typeColor = typesColors[pokemonTypes[0]]?.color || '#94BC4A'
 
   return (
-    <motion.div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4'
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={close}
-    >
-      <motion.div
-        layoutId={`pokemon-${id}`}
-        style={{ color: typeColor }}
+    <>
+      <div
+        ref={overlayRef}
+        className='fixed inset-0 z-50 bg-black/70'
+        style={{ opacity: 0 }}
+        onClick={close}
+      />
+      <div
+        ref={scope}
+        style={{ color: typeColor, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'
         aria-label={`Detalles de ${name}`}
-        className='relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-2xl dark:bg-gray-800'
+        className='fixed inset-0 z-50 m-auto h-fit max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-2xl dark:bg-gray-800'
       >
         <button
           type='button'
@@ -153,20 +198,20 @@ export const PokemonModal = () => {
           <div className='grid w-full grid-cols-2 gap-x-4 gap-y-1 text-sm'>
             <span className='capitalize'>Altura</span>
             <span className='text-right font-semibold'>
-              {data.height != null ? `${data.height / 10} m` : '—'}
+              {pokemon.height != null ? `${pokemon.height / 10} m` : '—'}
             </span>
             <span className='capitalize'>Peso</span>
             <span className='text-right font-semibold'>
-              {data.weight != null ? `${data.weight / 10} kg` : '—'}
+              {pokemon.weight != null ? `${pokemon.weight / 10} kg` : '—'}
             </span>
           </div>
 
           <div className='w-full'>
             <p className='mb-2 text-left text-xs font-semibold uppercase opacity-70'>Stats</p>
-            {data.stats?.length
+            {pokemon.stats?.length
               ? (
                 <div className='space-y-1'>
-                  {data.stats.map((stat) => (
+                  {pokemon.stats.map((stat) => (
                     <div key={stat.stat.name} className='flex items-center gap-2 text-sm'>
                       <span className='w-8 shrink-0 font-semibold'>
                         {STAT_LABELS[stat.stat.name]}
@@ -189,10 +234,10 @@ export const PokemonModal = () => {
 
           <div className='w-full'>
             <p className='mb-1 text-xs font-semibold uppercase opacity-70'>Habilidades</p>
-            {data.abilities?.length
+            {pokemon.abilities?.length
               ? (
                 <ul className='space-y-0.5 text-sm'>
-                  {data.abilities.map(({ ability, is_hidden: isHidden }) => (
+                  {pokemon.abilities.map(({ ability, is_hidden: isHidden }) => (
                     <li key={ability.name} className='capitalize'>
                       <span className='font-semibold'>{ability.name}</span>
                       {isHidden && (
@@ -220,8 +265,8 @@ export const PokemonModal = () => {
             Ver más detalles →
           </Link>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </>
   )
 }
 // #endregion Component

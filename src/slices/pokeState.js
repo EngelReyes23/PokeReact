@@ -8,6 +8,7 @@ const initialState = {
   pokemonDataList: [],
   openPokemonId: null,
   activePokemon: null,
+  pokemonSourceRect: null,
   pokemonCache: {}
 }
 
@@ -30,6 +31,9 @@ export const pokeState = createSlice({
     setActivePokemon: (state, action) => {
       state.activePokemon = action.payload
     },
+    setPokemonSourceRect: (state, action) => {
+      state.pokemonSourceRect = action.payload
+    },
     setPokemonCache: (state, action) => {
       const { name, key, data } = action.payload
       state.pokemonCache[name] = state.pokemonCache[name] || {}
@@ -47,6 +51,7 @@ export const {
   setPokeDataState,
   setOpenPokemonId,
   setActivePokemon,
+  setPokemonSourceRect,
   setPokemonCache,
   hydrateCache
 } = pokeState.actions

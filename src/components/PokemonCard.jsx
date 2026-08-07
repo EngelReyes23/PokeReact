@@ -1,9 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
 import { IconType } from './IconType'
-import { setOpenPokemonId, setActivePokemon, setPokemonCache } from '../slices/pokeState'
+import {
+  setOpenPokemonId,
+  setActivePokemon,
+  setPokemonSourceRect,
+  setPokemonCache
+} from '../slices/pokeState'
 import { fetchPokemonDetail } from '../slices/thunks'
 
 const imageNotFound =
@@ -57,12 +62,24 @@ export const PokemonCard = ({ pokemon }) => {
   const { id, name, types, sprites } = pokemon
   const pokemonTypes = types.map((type) => type.type.name)
   const dispatch = useDispatch()
+  const cardRef = useRef(null)
 
   const openPokemonId = useSelector((state) => state.pokeState.openPokemonId)
   const cache = useSelector((state) => state.pokeState.pokemonCache)
   const cached = Boolean(cache?.[name]?.pokemon)
 
   const open = () => {
+    const rect = cardRef.current?.getBoundingClientRect()
+    if (rect) {
+      dispatch(
+        setPokemonSourceRect({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height
+        })
+      )
+    }
     dispatch(setActivePokemon(pokemon))
     dispatch(setOpenPokemonId(id))
     // La lista ya trae los datos completos: se siembra la caché para reutilizarla
@@ -78,7 +95,7 @@ export const PokemonCard = ({ pokemon }) => {
 
   return (
     <motion.div
-      layoutId={`pokemon-${id}`}
+      ref={cardRef}
       onClick={open}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
