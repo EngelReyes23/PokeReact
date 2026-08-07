@@ -5,10 +5,9 @@ import { fetchPokemonDataList } from '../slices/thunks'
 const localPage = window.localStorage.getItem('page') || 0
 
 export const useData = () => {
-  const {
-    UI: { isLoading, error },
-    pokeState: { pokemonDataList }
-  } = useSelector((state) => state)
+  const isLoading = useSelector((state) => state.UI.isLoading)
+  const error = useSelector((state) => state.UI.error)
+  const pokemonDataList = useSelector((state) => state.pokeState.pokemonDataList)
   const dispatch = useDispatch()
 
   useEffect(() => {

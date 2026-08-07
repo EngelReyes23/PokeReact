@@ -4,9 +4,7 @@ import { IconLight } from '../icons/IconLight'
 import { toggleDarkMode } from '../slices/UI'
 
 export const Toggle = () => {
-  const {
-    UI: { isDarkMode }
-  } = useSelector((state) => state)
+  const isDarkMode = useSelector((state) => state.UI.isDarkMode)
   const dispatch = useDispatch()
 
   return (

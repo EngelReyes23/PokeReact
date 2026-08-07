@@ -17,9 +17,9 @@ const localPage = parseInt(window.localStorage.getItem('page')) || 0
 export const usePagination = () => {
   const [page, setPage] = useState(localPage)
 
-  const {
-    pokeState: { nextPage, prevPage, count }
-  } = useSelector((state) => state)
+  const nextPage = useSelector((state) => state.pokeState.nextPage)
+  const prevPage = useSelector((state) => state.pokeState.prevPage)
+  const count = useSelector((state) => state.pokeState.count)
   const dispatch = useDispatch()
 
   useEffect(() => {

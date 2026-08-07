@@ -58,7 +58,8 @@ export const PokemonCard = ({ pokemon }) => {
   const pokemonTypes = types.map((type) => type.type.name)
   const dispatch = useDispatch()
 
-  const { openPokemonId, pokemonCache: cache } = useSelector((state) => state.pokeState)
+  const openPokemonId = useSelector((state) => state.pokeState.openPokemonId)
+  const cache = useSelector((state) => state.pokeState.pokemonCache)
   const cached = Boolean(cache?.[name]?.pokemon)
 
   const open = () => {

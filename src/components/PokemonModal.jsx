@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -46,12 +46,35 @@ const imageFrom = (sprites) =>
   sprites?.front_default ||
   imageNotFound
 
+const StatSkeleton = () => (
+  <div className='w-full animate-pulse space-y-2'>
+    {[0, 1, 2, 3, 4, 5].map((i) => (
+      <div key={i} className='flex items-center gap-2'>
+        <div className='h-3 w-8 rounded bg-gray-300 dark:bg-gray-600' />
+        <div className='h-2 flex-1 rounded-full bg-gray-300 dark:bg-gray-600' />
+        <div className='h-3 w-6 rounded bg-gray-300 dark:bg-gray-600' />
+      </div>
+    ))}
+  </div>
+)
+
 // #region Component
 export const PokemonModal = () => {
   const dispatch = useDispatch()
   const pokemon = useSelector((state) => state.pokeState.activePokemon)
-  const { id, name, types, sprites } = pokemon
-  const pokemonTypes = types.map((type) => type.type.name)
+  const [snapshot, setSnapshot] = useState(null)
+
+  // Congela el pokémon mientras el modal hace el exit, aunque ya se haya cerrado
+  useEffect(() => {
+    if (pokemon) setSnapshot(pokemon)
+  }, [pokemon])
+
+  const data = pokemon || snapshot
+  if (!data) return null
+
+  const { id, name, types, sprites } = data
+  const pokemonTypes = types?.map((type) => type.type.name) || []
+  const typeColor = typesColors[pokemonTypes[0]]?.color || '#94BC4A'
   const close = () => {
     dispatch(setActivePokemon(null))
     dispatch(setOpenPokemonId(null))
@@ -88,7 +111,7 @@ export const PokemonModal = () => {
     >
       <motion.div
         layoutId={`pokemon-${id}`}
-        style={typesColors[pokemonTypes[0]].color}
+        style={{ color: typeColor }}
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'
@@ -108,7 +131,7 @@ export const PokemonModal = () => {
           <span
             className='rounded-full'
             style={{
-              backgroundColor: `${typesColors[pokemonTypes[0]].color}50`
+              backgroundColor: `${typeColor}50`
             }}
           >
             <img src={imageFrom(sprites)} alt={name} className='h-44 w-44 object-cover' />
@@ -129,50 +152,65 @@ export const PokemonModal = () => {
 
           <div className='grid w-full grid-cols-2 gap-x-4 gap-y-1 text-sm'>
             <span className='capitalize'>Altura</span>
-            <span className='text-right font-semibold'>{pokemon.height / 10} m</span>
+            <span className='text-right font-semibold'>
+              {data.height != null ? `${data.height / 10} m` : '—'}
+            </span>
             <span className='capitalize'>Peso</span>
-            <span className='text-right font-semibold'>{pokemon.weight / 10} kg</span>
+            <span className='text-right font-semibold'>
+              {data.weight != null ? `${data.weight / 10} kg` : '—'}
+            </span>
           </div>
 
-          {pokemon.stats && (
-            <div className='w-full'>
-              <p className='mb-2 text-left text-xs font-semibold uppercase opacity-70'>Stats</p>
-              <div className='space-y-1'>
-                {pokemon.stats.map((stat) => (
-                  <div key={stat.stat.name} className='flex items-center gap-2 text-sm'>
-                    <span className='w-8 shrink-0 font-semibold'>
-                      {STAT_LABELS[stat.stat.name]}
-                    </span>
-                    <div className='h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600'>
-                      <div
-                        className='h-full rounded-full bg-purple-500'
-                        style={{ width: `${Math.min(100, stat.base_stat)}%` }}
-                      />
-                    </div>
-                    <span className='w-6 shrink-0 text-right font-semibold'>{stat.base_stat}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {pokemon.abilities && (
-            <div className='w-full'>
-              <p className='mb-1 text-xs font-semibold uppercase opacity-70'>Habilidades</p>
-              <ul className='space-y-0.5 text-sm'>
-                {pokemon.abilities.map(({ ability, is_hidden: isHidden }) => (
-                  <li key={ability.name} className='capitalize'>
-                    <span className='font-semibold'>{ability.name}</span>
-                    {isHidden && (
-                      <span className='ml-2 rounded bg-gray-300 px-1.5 py-0.5 text-[10px] uppercase dark:bg-gray-700'>
-                        oculta
+          <div className='w-full'>
+            <p className='mb-2 text-left text-xs font-semibold uppercase opacity-70'>Stats</p>
+            {data.stats?.length
+              ? (
+                <div className='space-y-1'>
+                  {data.stats.map((stat) => (
+                    <div key={stat.stat.name} className='flex items-center gap-2 text-sm'>
+                      <span className='w-8 shrink-0 font-semibold'>
+                        {STAT_LABELS[stat.stat.name]}
                       </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                      <div className='h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600'>
+                        <div
+                          className='h-full rounded-full bg-purple-500'
+                          style={{ width: `${Math.min(100, stat.base_stat)}%` }}
+                        />
+                      </div>
+                      <span className='w-6 shrink-0 text-right font-semibold'>{stat.base_stat}</span>
+                    </div>
+                  ))}
+                </div>
+                )
+              : (
+                <StatSkeleton />
+                )}
+          </div>
+
+          <div className='w-full'>
+            <p className='mb-1 text-xs font-semibold uppercase opacity-70'>Habilidades</p>
+            {data.abilities?.length
+              ? (
+                <ul className='space-y-0.5 text-sm'>
+                  {data.abilities.map(({ ability, is_hidden: isHidden }) => (
+                    <li key={ability.name} className='capitalize'>
+                      <span className='font-semibold'>{ability.name}</span>
+                      {isHidden && (
+                        <span className='ml-2 rounded bg-gray-300 px-1.5 py-0.5 text-[10px] uppercase dark:bg-gray-700'>
+                          oculta
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                )
+              : (
+                <div className='animate-pulse space-y-2'>
+                  <div className='h-3 w-32 rounded bg-gray-300 dark:bg-gray-600' />
+                  <div className='h-3 w-24 rounded bg-gray-300 dark:bg-gray-600' />
+                </div>
+                )}
+          </div>
 
           <Link
             to={`/pokemon/${name}`}
