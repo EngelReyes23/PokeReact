@@ -39,9 +39,10 @@
 - [x] **Phase 1 — Card flies to center as modal** (deterministic FLIP with framer-motion: getBoundingClientRect + x/y/scale). Open + close (X/Esc/overlay), scroll lock, visible fly-back. Commit 7ecb7a7.
 - [x] **Phase 2 — "Ver más detalles" link** navigates to `/pokemon/:name`, closes modal. Commit d04a02d.
 - [x] **Phase 3 — Detail page + evolution chain**: thunk `fetchEvolutionChain`, chains /pokemon-species -> /evolution-chain, flatten tree (handles branching e.g. Eevee 9 forms), Spanish flavor text, stat bars, abilities, "Volver", spinner + error/retry. Commit 18f664e.
-- [x] **Phase 4 — Search**: `searchTerm` + `allPokemonNames` in pokeState, thunk `fetchAllPokemonNames` (/pokemon?limit=100000), persisted in IndexedDB (hydrated in main.jsx), Header search input with 300ms debounce + clear button, client-side case-insensitive filter, empty state, navigates to `/` when searching from another route. Commit 3cb7c83. NOTE: filtered results capped at 20 until pagination-over-filtered is added in Phase 6.
-- [ ] **Phase 5.1 — Page cache + fetch optimization (NEXT)**
-- [ ] **Phase 6 — Filters**
+- [x] **Phase 4 — Search**: `searchTerm` + `allPokemonNames` in pokeState, thunk `fetchAllPokemonNames` (/pokemon?limit=100000), persisted in IndexedDB (hydrated in main.jsx), Header search input with 300ms debounce + clear button, client-side case-insensitive filter, empty state, navigates to `/` when searching from another route. Commit 3cb7c83. NOTE: the 20-result cap was removed in Phase 6 (client-side pagination over the filtered subset).
+- [x] **Phase 6 — Filters**: URL is the single source of truth (`?search=&type=fire,flying&gen=1&sort=id&page=N`). New `useFilteredList` hook = pipeline filter (search ∩ type intersection ∩ generation) -> sort (id/name/total-stats) -> paginate client-side over the full subset (20/page). New `FilterBar.jsx`: type chips (multi, with IconType + aria-pressed), generation chips (1-9), sort select, results counter, "Limpiar filtros". `typeCache` + `generationCache` in pokeState, thunks `fetchTypeList`/`fetchGenerationList` (cache-first), persisted in IndexedDB + hydrated in main.jsx. Home hydrates Redux from URL params on mount/change. `usePagination` now reads/writes `?page=N` and merges with other params (no longer resets). Sort by stat only uses already-cached pokemon (uncached go last, no mass fetches). Modal "Ver más detalles" and Detail "Volver" preserve the full query string. Commit 0e2f8a4.
+- [ ] **Phase 5.1 — Page cache + fetch optimization**
+- [ ] **Phase 6 — (COMPLETADO arriba; quedan pendientes: filtros UI polish)**
 - [ ] **Phase 7 — Extras**
 
 ## Known notes / decisions
