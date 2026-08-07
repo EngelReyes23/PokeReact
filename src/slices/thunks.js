@@ -1,11 +1,17 @@
 import { api } from '../utils/api'
-import { setPokeDataState, setPokemonCache, setAllPokemonNames } from './pokeState'
+import { setPokeDataState, setPokemonCache, setPageCache, setAllPokemonNames } from './pokeState'
 import { setError, setLoading } from './UI'
 import { saveCache, saveNames } from '../utils/cache'
 import { flattenChain, extractChainId } from '../utils/evolution'
 
 export const fetchPokemonDataList = (page = 0) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    const cached = getState().pokeState.pageCache[page]
+    if (cached) {
+      dispatch(setPokeDataState(cached))
+      return
+    }
+
     dispatch(setLoading(true))
 
     try {
@@ -13,6 +19,7 @@ export const fetchPokemonDataList = (page = 0) => {
       const data = await api.pokemon('', { offset })
 
       dispatch(setPokeDataState(data))
+      dispatch(setPageCache({ page, data }))
     } catch (error) {
       dispatch(setError(error.message))
     } finally {

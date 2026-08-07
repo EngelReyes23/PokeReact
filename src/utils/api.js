@@ -7,13 +7,13 @@ const createAPI = (baseURL) => {
       get: (_, endpoint) => {
         let url = `${baseURL}/${endpoint}`
 
-        return async (name = '', queryParams = '') => {
+        return async (name = '', queryParams = '', options = {}) => {
           if (['next', 'previous'].includes(endpoint)) url = name
           else url += `/${name}`
 
           url += `?${new URLSearchParams(queryParams).toString()}`
 
-          const res = await fetch(url)
+          const res = await fetch(url, options)
           return res.json()
         }
       }

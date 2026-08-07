@@ -112,7 +112,13 @@ export const PokemonCard = ({ pokemon }) => {
         className='min-h-[150px] w-1/2 min-w-[150px] rounded-full border-current transition group-hover:border'
         style={styles(pokemonTypes, 50)}
       >
-        <img alt={name} className='w-full scale-110 object-cover' src={imageFrom(sprites)} />
+        <img
+          alt={name}
+          loading='lazy'
+          decoding='async'
+          className='w-full scale-110 object-cover'
+          src={imageFrom(sprites)}
+        />
       </div>
 
       <p className='-mt-1 text-center text-2xl font-semibold capitalize transition group-hover:font-bold'>

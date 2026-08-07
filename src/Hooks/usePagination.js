@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 
 // Local imports
 import { fetchPokemonDataList } from '../slices/thunks'
@@ -12,10 +13,14 @@ const scroll = () => {
   })
 }
 
-const localPage = parseInt(window.localStorage.getItem('page')) || 0
+const readPageFromUrl = (searchParams) => {
+  const parsed = parseInt(searchParams.get('page'), 10)
+  return Number.isNaN(parsed) || parsed < 0 ? 0 : parsed
+}
 
 export const usePagination = () => {
-  const [page, setPage] = useState(localPage)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [page, setPage] = useState(() => readPageFromUrl(searchParams))
 
   const nextPage = useSelector((state) => state.pokeState.nextPage)
   const prevPage = useSelector((state) => state.pokeState.prevPage)
@@ -24,12 +29,16 @@ export const usePagination = () => {
 
   useEffect(() => {
     dispatch(fetchPokemonDataList(page))
-  }, [page])
+  }, [page, dispatch])
 
   const handlePageChange = (page) => {
     scroll()
     setPage(page)
-    window.localStorage.setItem('page', page)
+    if (page > 0) {
+      setSearchParams({ page: String(page) })
+    } else {
+      setSearchParams({})
+    }
   }
 
   return {

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useAnimate, usePresence } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
 import { IconType } from './IconType'
@@ -64,6 +64,8 @@ const StatSkeleton = () => (
 // #region Component
 export const PokemonModal = () => {
   const dispatch = useDispatch()
+  const [searchParams] = useSearchParams()
+  const page = searchParams.get('page') || ''
   const pokemon = useSelector((state) => state.pokeState.activePokemon)
   const sourceRect = useSelector((state) => state.pokeState.pokemonSourceRect)
   const [isPresent, safeToRemove] = usePresence()
@@ -258,7 +260,7 @@ export const PokemonModal = () => {
           </div>
 
           <Link
-            to={`/pokemon/${name}`}
+            to={page ? `/pokemon/${name}?page=${page}` : `/pokemon/${name}`}
             onClick={(e) => {
               e.stopPropagation()
               close()

@@ -7,9 +7,10 @@ export const PokemonList = ({ pokemonDataList }) => {
 
   // En la primera carga de la página, muestra un skeleton
   if (pokemonList.length === 0) {
+    const skeletonCount = Math.min(pokemonDataList.length || 20, 20)
     return (
       <div className='mx-auto flex max-w-[1700px] flex-wrap items-center justify-center gap-5 overflow-hidden py-5 transition-colors duration-500 dark:bg-gray-900'>
-        {[...new Array(20)].map((_, i) => (
+        {[...new Array(skeletonCount)].map((_, i) => (
           <PokemonCardSkeleton key={i} />
         ))}
       </div>
