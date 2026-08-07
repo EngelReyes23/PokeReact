@@ -1,9 +1,17 @@
 import { api } from '../utils/api'
-import { setPokeDataState, setPokemonCache, setPageCache, setAllPokemonNames } from './pokeState'
+import {
+  setPokeDataState,
+  setPokemonCache,
+  setPageCache,
+  setAllPokemonNames,
+  setTypeCache,
+  setGenerationCache
+} from './pokeState'
 import { setError, setLoading } from './UI'
-import { saveCache, saveNames } from '../utils/cache'
+import { saveCache, saveNames, saveTypeCache, saveGenerationCache } from '../utils/cache'
 import { flattenChain, extractChainId } from '../utils/evolution'
 
+// TODO: dead code tras Fase 6, limpiar al final
 export const fetchPokemonDataList = (page = 0) => {
   return async (dispatch, getState) => {
     const cached = getState().pokeState.pageCache[page]
@@ -63,7 +71,7 @@ export const fetchPokemonDetail = (name, key = 'pokemon') => {
 }
 
 // PokeAPI no soporta búsqueda parcial por nombre: trae la lista completa una vez
-// y se filtra en cliente. La lista se persiste y se comprueba antes de pedirla.
+// y se filtra en el cliente. La lista se persiste y se comprueba antes de pedirla.
 export const fetchAllPokemonNames = () => {
   return async (dispatch, getState) => {
     const existing = getState().pokeState.allPokemonNames
@@ -75,6 +83,49 @@ export const fetchAllPokemonNames = () => {
       dispatch(setAllPokemonNames(names))
       setTimeout(() => saveNames(names), PERSIST_AFTER_MS)
       return names
+    } catch (error) {
+      dispatch(setError(error.message))
+      throw error
+    }
+  }
+}
+
+// Members of a given type (/type/{type} -> pokemon array). Cache-first in Redux and
+// persisted in IndexedDB; each entry stores the raw pokemon list [{name, url}, ...].
+export const fetchTypeList = (type) => {
+  return async (dispatch, getState) => {
+    const existing = getState().pokeState.typeCache[type]
+    if (existing) return existing
+
+    try {
+      const data = await api.type(type)
+      const members = data.pokemon.map(({ pokemon }) => pokemon)
+      dispatch(setTypeCache({ type, data: members }))
+
+      const refresh = () => saveTypeCache(getState().pokeState.typeCache)
+      setTimeout(refresh, PERSIST_AFTER_MS)
+      return members
+    } catch (error) {
+      dispatch(setError(error.message))
+      throw error
+    }
+  }
+}
+
+// Members of a generation (/generation/{id} -> pokemon_species array).
+export const fetchGenerationList = (generation) => {
+  return async (dispatch, getState) => {
+    const existing = getState().pokeState.generationCache[generation]
+    if (existing) return existing
+
+    try {
+      const data = await api.generation(generation)
+      const members = data.pokemon_species
+      dispatch(setGenerationCache({ generation, data: members }))
+
+      const refresh = () => saveGenerationCache(getState().pokeState.generationCache)
+      setTimeout(refresh, PERSIST_AFTER_MS)
+      return members
     } catch (error) {
       dispatch(setError(error.message))
       throw error

@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 
-// Local imports
-import { fetchPokemonDataList } from '../slices/thunks'
+const PAGE_SIZE = 20
 
 const scroll = () => {
   window.scrollTo({
@@ -18,34 +15,31 @@ const readPageFromUrl = (searchParams) => {
   return Number.isNaN(parsed) || parsed < 0 ? 0 : parsed
 }
 
-export const usePagination = () => {
+// Paginación 100% client-side sobre el subconjunto ya filtrado (workingList).
+// La página vive en ?page=N y se clampea a la última válida si el filtro la deja fuera.
+export const usePagination = (workingList = []) => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [page, setPage] = useState(() => readPageFromUrl(searchParams))
+  const totalPages = Math.max(1, Math.ceil(workingList.length / PAGE_SIZE))
+  const page = Math.min(readPageFromUrl(searchParams), totalPages - 1)
 
-  const nextPage = useSelector((state) => state.pokeState.nextPage)
-  const prevPage = useSelector((state) => state.pokeState.prevPage)
-  const count = useSelector((state) => state.pokeState.count)
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    dispatch(fetchPokemonDataList(page))
-  }, [page, dispatch])
+  const start = page * PAGE_SIZE
+  const pageItems = workingList.slice(start, start + PAGE_SIZE)
 
   const handlePageChange = (page) => {
     scroll()
-    setPage(page)
-    if (page > 0) {
-      setSearchParams({ page: String(page) })
-    } else {
-      setSearchParams({})
-    }
+    const next = new URLSearchParams(searchParams)
+    if (page > 0) next.set('page', String(page))
+    else next.delete('page')
+    setSearchParams(next, { replace: false })
   }
 
   return {
     page,
-    nextPage,
-    prevPage,
+    pageItems,
+    totalPages,
+    total: workingList.length,
     handlePageChange,
-    totalPages: Math.ceil(count / 20)
+    prevPage: page > 0,
+    nextPage: page < totalPages - 1
   }
 }

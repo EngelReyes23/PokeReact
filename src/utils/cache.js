@@ -2,6 +2,8 @@ import { get, set } from 'idb-keyval'
 
 const CACHE_KEY = 'pokemonCache'
 const NAMES_CACHE_KEY = 'allPokemonNames'
+const TYPE_CACHE_KEY = 'typeCache'
+const GENERATION_CACHE_KEY = 'generationCache'
 
 export const saveCache = async (cache) => {
   try {
@@ -34,5 +36,39 @@ export const loadNames = async () => {
   } catch (error) {
     console.warn('No se pudo cargar la lista de nombres', error)
     return []
+  }
+}
+
+export const saveTypeCache = async (cache) => {
+  try {
+    await set(TYPE_CACHE_KEY, cache)
+  } catch (error) {
+    console.warn('No se pudo persistir la caché de tipos', error)
+  }
+}
+
+export const loadTypeCache = async () => {
+  try {
+    return (await get(TYPE_CACHE_KEY)) || {}
+  } catch (error) {
+    console.warn('No se pudo cargar la caché de tipos', error)
+    return {}
+  }
+}
+
+export const saveGenerationCache = async (cache) => {
+  try {
+    await set(GENERATION_CACHE_KEY, cache)
+  } catch (error) {
+    console.warn('No se pudo persistir la caché de generaciones', error)
+  }
+}
+
+export const loadGenerationCache = async () => {
+  try {
+    return (await get(GENERATION_CACHE_KEY)) || {}
+  } catch (error) {
+    console.warn('No se pudo cargar la caché de generaciones', error)
+    return {}
   }
 }

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Toggle } from './Toggle'
-import { setSearchTerm } from '../slices/pokeState'
 import { fetchAllPokemonNames } from '../slices/thunks'
 
 const SearchIcon = () => (
@@ -39,27 +38,39 @@ const SearchField = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const searchTerm = useSelector((state) => state.pokeState.searchTerm)
-  const [value, setValue] = useState(searchTerm)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const urlSearch = searchParams.get('search') || ''
+  const [value, setValue] = useState(urlSearch)
 
   useEffect(() => {
-    if (searchTerm !== value.trim()) setValue(searchTerm)
-  }, [searchTerm])
+    if (urlSearch !== value.trim()) setValue(urlSearch)
+  }, [urlSearch])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const term = value.trim()
-      if (term === searchTerm) return
+      if (term === urlSearch) return
       dispatch(fetchAllPokemonNames())
-      dispatch(setSearchTerm(term))
-      if (term && pathname !== '/') navigate('/')
+
+      const next = new URLSearchParams(searchParams)
+      if (term) next.set('search', term)
+      else next.delete('search')
+
+      if (pathname !== '/') {
+        navigate(`/?${next.toString()}`)
+      } else {
+        setSearchParams(next, { replace: false })
+      }
     }, 300)
     return () => clearTimeout(timer)
-  }, [value, searchTerm, pathname, dispatch, navigate])
+  }, [value, searchParams, pathname, dispatch, navigate, setSearchParams, urlSearch])
 
   const clear = () => {
     setValue('')
-    dispatch(setSearchTerm(''))
+    const next = new URLSearchParams(searchParams)
+    next.delete('search')
+    if (pathname !== '/') navigate('/')
+    else setSearchParams(next, { replace: false })
   }
 
   return (

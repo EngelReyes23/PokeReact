@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Badge } from '../components/Badge'
 import { IconType } from '../components/IconType'
@@ -47,9 +47,9 @@ const getSpanishFlavor = (species) => {
 
 const padId = (id) => `#${String(id).padStart(3, '0')}`
 
-const BackButton = ({ page }) => (
+const BackButton = ({ search }) => (
   <Link
-    to={page ? `/?page=${page}` : '/'}
+    to={search ? `/${search}` : '/'}
     className='self-start rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-600 transition-colors hover:bg-purple-500 hover:text-white dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-purple-600'
   >
     ← Volver
@@ -136,8 +136,7 @@ const EvolutionChain = ({ evolution, currentName }) => (
 export const PokemonDetail = () => {
   const dispatch = useDispatch()
   const { name } = useParams()
-  const [searchParams] = useSearchParams()
-  const returnPage = searchParams.get('page') || ''
+  const { search } = useLocation()
   const [pokemon, setPokemon] = useState(null)
   const [species, setSpecies] = useState(null)
   const [evolution, setEvolution] = useState([])
@@ -180,7 +179,7 @@ export const PokemonDetail = () => {
   if (error) {
     return (
       <section className='container mx-auto flex flex-col items-center gap-4 px-4 py-10'>
-        <BackButton page={returnPage} />
+        <BackButton search={search} />
         <p className='text-xl'>No pudimos cargar este pokémon.</p>
         <p className='text-sm text-gray-500'>{error.message}</p>
         <button
@@ -197,7 +196,7 @@ export const PokemonDetail = () => {
   if (!pokemon || isLoading) {
     return (
       <section className='container mx-auto flex flex-col items-center gap-6 px-4 py-10'>
-        <BackButton page={returnPage} />
+        <BackButton search={search} />
         <Spinner />
       </section>
     )
@@ -211,7 +210,7 @@ export const PokemonDetail = () => {
 
   return (
     <section className='container mx-auto flex flex-col items-center gap-6 px-4 py-10'>
-      <BackButton />
+      <BackButton search={search} />
 
       <div className='flex flex-col items-center gap-3'>
         <span className='rounded-full' style={{ backgroundColor: `${typeColor}50` }}>

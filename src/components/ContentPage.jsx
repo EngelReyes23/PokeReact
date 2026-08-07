@@ -1,14 +1,15 @@
 import { usePagination } from '../Hooks/usePagination'
 import { PaginationComponent } from './PaginationComponent'
+import { PokemonList } from './PokemonList'
 
-export const ContentPage = ({ children }) => {
-  const props = usePagination()
+export const ContentPage = ({ workingList }) => {
+  const pagination = usePagination(workingList)
 
   return (
     <>
-      <PaginationComponent {...props} />
-      {children}
-      <PaginationComponent {...props} />
+      <PaginationComponent {...pagination} />
+      <PokemonList pokemonDataList={pagination.pageItems} />
+      <PaginationComponent {...pagination} />
     </>
   )
 }

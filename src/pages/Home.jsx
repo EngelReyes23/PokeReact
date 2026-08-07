@@ -1,25 +1,44 @@
 import { useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { useSelector } from 'react-redux'
-import { ContentPage, ErrorBoundary, PokemonList, PokemonModal, Spinner } from '../components'
-import { useData } from '../Hooks/useData'
+import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
+import {
+  ContentPage,
+  ErrorBoundary,
+  FilterBar,
+  PokemonModal,
+  Spinner,
+  PokemonCardSkeleton
+} from '../components'
+import { setSearchTerm, setActiveTypes, setGeneration, setSortBy } from '../slices/pokeState'
+import { useFilteredList } from '../Hooks/useFilteredList'
 
 const SCROLL_KEY = 'pokeduxHomeScroll'
 
-const EmptyResults = ({ query }) => (
+const SORTS = ['id', 'name', 'stat']
+
+const EmptyResults = () => (
   <div className='flex flex-col items-center gap-2 py-16 text-center text-gray-500 dark:text-gray-400'>
     <p className='text-3xl font-bold text-gray-400 dark:text-gray-600'>Sin resultados</p>
-    <p>
-      No se encontró ningún pokémon para <span className='font-medium'>&quot;{query}&quot;</span>.
-    </p>
+    <p>Prueba con otros filtros o términos de búsqueda.</p>
   </div>
 )
 
 export const Home = () => {
-  const { isLoading, pokemonDataList } = useData()
+  const dispatch = useDispatch()
   const openPokemonId = useSelector((state) => state.pokeState.openPokemonId)
-  const searchTerm = useSelector((state) => state.pokeState.searchTerm)
-  const allPokemonNames = useSelector((state) => state.pokeState.allPokemonNames)
+  const [searchParams] = useSearchParams()
+
+  // URL que alimenta el pipeline: nutriendo Redux para que useFilteredList lo lea
+  useEffect(() => {
+    dispatch(setSearchTerm(searchParams.get('search') || ''))
+    dispatch(setActiveTypes((searchParams.get('type') || '').split(',').filter(Boolean)))
+    dispatch(setGeneration(searchParams.get('gen') || null))
+    const sort = searchParams.get('sort') || 'id'
+    dispatch(setSortBy(SORTS.includes(sort) ? sort : 'id'))
+  }, [searchParams, dispatch])
+
+  const { workingList, filtersLoading, namesLoading } = useFilteredList()
 
   useEffect(() => {
     const saved = window.sessionStorage.getItem(SCROLL_KEY)
@@ -32,35 +51,27 @@ export const Home = () => {
     }
   }, [])
 
-  const searching = searchTerm !== ''
-  const searchResults = searching
-    ? allPokemonNames
-      .filter(({ name }) => name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .slice(0, 20)
-    : []
-
   return (
     <>
-      {!searching && (
-        <>
-          {isLoading && <Spinner />}
-          <ContentPage>
-            <PokemonList pokemonDataList={pokemonDataList} />
-          </ContentPage>
-        </>
-      )}
+      <FilterBar total={workingList.length} />
 
-      {searching &&
-        (allPokemonNames.length === 0
+      {namesLoading && <Spinner />}
+
+      {!namesLoading &&
+        (filtersLoading
           ? (
-            <Spinner />
+            <div className='mx-auto flex max-w-[1700px] flex-wrap items-center justify-center gap-5 overflow-hidden py-5 transition-colors duration-500 dark:bg-gray-900'>
+              {[...new Array(20)].map((_, i) => (
+                <PokemonCardSkeleton key={i} />
+              ))}
+            </div>
             )
-          : searchResults.length > 0
+          : workingList.length > 0
             ? (
-              <PokemonList pokemonDataList={searchResults} />
+              <ContentPage workingList={workingList} />
               )
             : (
-              <EmptyResults query={searchTerm} />
+              <EmptyResults />
               ))}
 
       <ErrorBoundary>

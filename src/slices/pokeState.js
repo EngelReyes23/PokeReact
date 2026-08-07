@@ -10,9 +10,15 @@ const initialState = {
   activePokemon: null,
   pokemonSourceRect: null,
   pokemonCache: {},
+  // TODO: dead code tras Fase 6, limpiar al final
   pageCache: {},
   searchTerm: '',
-  allPokemonNames: []
+  allPokemonNames: [],
+  activeTypes: [],
+  generation: null,
+  sortBy: 'id',
+  typeCache: {},
+  generationCache: {}
 }
 
 export const pokeState = createSlice({
@@ -52,8 +58,28 @@ export const pokeState = createSlice({
       const { page, data } = action.payload
       state.pageCache[page] = data
     },
-    setAllPokemonNames: (state, action) => {
-      state.allPokemonNames = action.payload
+    setActiveTypes: (state, action) => {
+      state.activeTypes = action.payload
+    },
+    setGeneration: (state, action) => {
+      state.generation = action.payload
+    },
+    setSortBy: (state, action) => {
+      state.sortBy = action.payload
+    },
+    setTypeCache: (state, action) => {
+      const { type, data } = action.payload
+      state.typeCache[type] = data
+    },
+    hydrateTypeCache: (state, action) => {
+      state.typeCache = action.payload
+    },
+    setGenerationCache: (state, action) => {
+      const { generation, data } = action.payload
+      state.generationCache[generation] = data
+    },
+    hydrateGenerationCache: (state, action) => {
+      state.generationCache = action.payload
     }
   }
 })
@@ -69,5 +95,12 @@ export const {
   hydrateCache,
   setSearchTerm,
   setPageCache,
-  setAllPokemonNames
+  setAllPokemonNames,
+  setActiveTypes,
+  setGeneration,
+  setSortBy,
+  setTypeCache,
+  hydrateTypeCache,
+  setGenerationCache,
+  hydrateGenerationCache
 } = pokeState.actions
