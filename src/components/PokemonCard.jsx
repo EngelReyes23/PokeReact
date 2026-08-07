@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Badge } from './Badge'
 import { IconType } from './IconType'
 
@@ -46,7 +47,8 @@ export const PokemonCard = ({ pokemon }) => {
   const pokemonTypes = types.map((type) => type.type.name)
 
   return (
-    <div
+    <Link
+      to={`/pokemon/${name}`}
       style={styles(pokemonTypes, 50)}
       className='animate__animated animate__fadeIn shadow-current/50 group flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl border-current py-2.5 transition-transform hover:scale-110 hover:border'
     >
@@ -76,7 +78,7 @@ export const PokemonCard = ({ pokemon }) => {
           <Badge key={type} type={type} {...typesColors[type]} />
         ))}
       </div>
-    </div>
+    </Link>
   )
 }
 // #endregion Component
