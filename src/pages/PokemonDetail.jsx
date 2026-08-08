@@ -29,54 +29,20 @@ const BackButton = ({ search }) => (
 )
 
 const Abilities = ({ abilities }) => (
-  <section className='w-full'>
-    <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Habilidades</h3>
-    <ul className='flex flex-wrap gap-2'>
+  <div>
+    <h4 className='text-label text-muted'>Habilidades</h4>
+    <ul className='mt-1.5 flex flex-wrap gap-1.5'>
       {abilities.map(({ ability, is_hidden: isHidden }) => (
         <li
           key={ability.name}
-          className='dark:bg-brand-900 rounded-full bg-brand-100 px-4 py-1.5 capitalize'
+          className='rounded-full bg-brand-100 px-3 py-1 text-sm capitalize dark:bg-brand-700/40'
         >
           {ability.name}
-          {isHidden && ' (oculta)'}
+          {isHidden && <span className='text-xs text-muted'> (oculta)</span>}
         </li>
       ))}
     </ul>
-  </section>
-)
-
-const EvolutionChain = ({ evolution, currentName }) => (
-  <section className='w-full'>
-    <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Línea evolutiva</h3>
-    {evolution.length
-      ? (
-        <div className='flex flex-col items-center gap-2'>
-          {evolution.map((evo, i) => (
-            <div key={evo.id} className='flex flex-col items-center gap-2'>
-              {i > 0 && (
-                <div className='flex items-center gap-2 text-sm text-muted'>
-                  <span className='text-base leading-none'>↓</span>
-                  <span className='italic'>{evo.condition || 'Desconocido'}</span>
-                </div>
-              )}
-              <Card
-                as={Link}
-                to={`/pokemon/${evo.name}`}
-                className={`flex w-44 flex-col items-center gap-1 p-3 transition-transform hover:scale-105 ${
-                evo.name === currentName ? 'ring-2 ring-brand-500' : ''
-              }`}
-              >
-                <img src={evo.sprite} alt={evo.name} className='h-20 w-20 object-contain' />
-                <span className='text-sm font-semibold capitalize'>{evo.name}</span>
-              </Card>
-            </div>
-          ))}
-        </div>
-        )
-      : (
-        <p className='text-sm text-muted'>Sin cadena evolutiva.</p>
-        )}
-  </section>
+  </div>
 )
 
 export const PokemonDetail = () => {
@@ -85,7 +51,6 @@ export const PokemonDetail = () => {
   const { search } = useLocation()
   const [pokemon, setPokemon] = useState(null)
   const [species, setSpecies] = useState(null)
-  const [evolution, setEvolution] = useState([])
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -97,7 +62,6 @@ export const PokemonDetail = () => {
       setError(null)
       setPokemon(null)
       setSpecies(null)
-      setEvolution([])
 
       try {
         const p = await Promise.all([
@@ -107,7 +71,6 @@ export const PokemonDetail = () => {
         if (!active) return
         setPokemon(p[0])
         setSpecies(p[1].species)
-        setEvolution(p[1].evolution)
       } catch (err) {
         if (active) setError(err)
       } finally {
@@ -155,47 +118,63 @@ export const PokemonDetail = () => {
   const flavorText = getSpanishFlavor(species)
 
   return (
-    <section className='container mx-auto flex flex-col items-center gap-6 px-4 py-10 text-gray-900 dark:text-gray-100'>
+    <section className='container mx-auto flex flex-col gap-4 px-4 py-6 text-gray-900 dark:text-gray-100'>
       <BackButton search={search} />
 
-      <div className='flex flex-col items-center gap-3'>
-        <span className='rounded-full' style={{ backgroundColor: `${typeColor}50` }}>
-          <img src={image} alt={name} className='h-56 w-56 object-cover' />
+      <Card className='flex flex-col items-center gap-5 p-6 sm:flex-row sm:items-center sm:gap-6'>
+        <span className='shrink-0 rounded-full' style={{ backgroundColor: `${typeColor}50` }}>
+          <img src={image} alt={name} className='h-36 w-36 object-cover sm:h-40 sm:w-40' />
         </span>
 
-        <h2 className='text-h1 capitalize text-gray-900 dark:text-gray-100'>
-          {name} <span className='font-mono text-gray-400'>{padId(id)}</span>
-        </h2>
+        <div className='flex w-full flex-col gap-3 text-center sm:text-left'>
+          <div className='flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 sm:justify-between'>
+            <h1 className='text-h1 capitalize text-gray-900 dark:text-gray-100'>{name}</h1>
+            <span className='rounded-full bg-gray-100 px-2.5 py-0.5 font-mono text-caption text-gray-500 dark:bg-gray-700 dark:text-gray-300'>
+              {padId(id)}
+            </span>
+          </div>
 
-        <div className='flex items-center justify-center gap-2'>
-          {types.map((type) => {
-            const t = type.type.name
-            return <Badge key={t} type={t} {...(TYPES[t] || {})} />
-          })}
+          <div className='flex flex-wrap justify-center gap-2 sm:justify-start'>
+            {types.map((type) => {
+              const t = type.type.name
+              return <Badge key={t} type={t} {...TYPES[t]} />
+            })}
+          </div>
         </div>
-      </div>
+      </Card>
 
-      {flavorText && (
-        <blockquote className='max-w-xl rounded-lg bg-white/50 p-4 text-center italic shadow-md dark:bg-gray-800/50'>
-          “{flavorText}”
-        </blockquote>
-      )}
+      <div className='grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.2fr_0.9fr] lg:gap-5'>
+        <Card className='flex h-full flex-col gap-4 p-5'>
+          <h3 className='text-caption uppercase tracking-wide text-muted'>Pokédex Entry</h3>
+          {flavorText && (
+            <p className='text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
+              “{flavorText}”
+            </p>
+          )}
 
-      <div className='flex w-full max-w-xl flex-col gap-6'>
-        <div className='grid grid-cols-2 gap-3'>
-          <Card className='p-4 text-center'>
-            <p className='text-label text-muted'>Peso</p>
-            <p className='text-xl font-bold'>{pokemon.weight / 10} kg</p>
-          </Card>
-          <Card className='p-4 text-center'>
-            <p className='text-label text-muted'>Altura</p>
-            <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
-          </Card>
+          <div className='mt-auto grid grid-cols-2 gap-3'>
+            <div>
+              <p className='text-label text-muted'>Altura</p>
+              <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
+            </div>
+            <div>
+              <p className='text-label text-muted'>Peso</p>
+              <p className='text-xl font-bold'>{pokemon.weight / 10} kg</p>
+            </div>
+          </div>
+
+          {abilities?.length > 0 && <Abilities abilities={abilities} />}
+        </Card>
+
+        <div className='h-full'>
+          <StatBlock stats={stats} layout='grid' />
         </div>
 
-        {stats && <StatBlock stats={stats} layout='grid' />}
-        {abilities?.length > 0 && <Abilities abilities={abilities} />}
-        <EvolutionChain evolution={evolution} currentName={name} />
+        <div className='flex h-full flex-col lg:max-h-[calc(100vh-25rem)] lg:overflow-y-auto lg:pr-1'>
+          <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Línea evolutiva</h3>
+          {/* Paso 2: cadena evolutiva vertical con soporte de ramas */}
+          <p className='text-sm text-muted'>Skeleton del Paso 1 — cadena vertical en el Paso 2.</p>
+        </div>
       </div>
     </section>
   )
