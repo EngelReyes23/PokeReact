@@ -29,7 +29,7 @@ const padId = (id) => `#${String(id).padStart(3, '0')}`
 const BackButton = ({ search }) => (
   <Link
     to={search ? `/${search}` : '/'}
-    className='self-start rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-600 transition-colors hover:bg-purple-500 hover:text-white dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-purple-600'
+    className='self-start rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-600 transition-colors hover:bg-brand-500 hover:text-white dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-brand-600'
   >
     ← Volver
   </Link>
@@ -48,7 +48,7 @@ const StatBars = ({ stats }) => (
           <div className='flex flex-1 items-center gap-2'>
             <div className='h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600'>
               <div
-                className='h-full rounded-full bg-purple-500'
+                className='h-full rounded-full bg-brand-500'
                 style={{ width: `${Math.min(100, stat.base_stat)}%` }}
               />
             </div>
@@ -67,7 +67,7 @@ const Abilities = ({ abilities }) => (
       {abilities.map(({ ability, is_hidden: isHidden }) => (
         <li
           key={ability.name}
-          className='rounded-full bg-purple-100 px-4 py-1.5 capitalize dark:bg-purple-900'
+          className='dark:bg-brand-900 rounded-full bg-brand-100 px-4 py-1.5 capitalize'
         >
           {ability.name}
           {isHidden && ' (oculta)'}
@@ -95,7 +95,7 @@ const EvolutionChain = ({ evolution, currentName }) => (
                 to={`/pokemon/${evo.name}`}
                 className={`flex w-44 flex-col items-center gap-1 rounded-xl p-3 shadow-sm transition-transform hover:scale-105 ${
                 evo.name === currentName
-                  ? 'bg-purple-200 ring-2 ring-purple-400 dark:bg-purple-800'
+                  ? 'bg-brand-200 ring-brand-400 dark:bg-brand-800 ring-2'
                   : 'bg-white dark:bg-gray-800'
               }`}
               >
@@ -164,7 +164,7 @@ export const PokemonDetail = () => {
         <button
           type='button'
           onClick={() => window.location.reload()}
-          className='rounded-lg bg-purple-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-purple-600'
+          className='rounded-lg bg-brand-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-600'
         >
           Reintentar
         </button>
@@ -196,7 +196,7 @@ export const PokemonDetail = () => {
           <img src={image} alt={name} className='h-56 w-56 object-cover' />
         </span>
 
-        <h2 className='text-4xl font-bold capitalize'>
+        <h2 className='text-4xl font-bold capitalize text-gray-900'>
           {name} <span className='font-mono text-gray-400'>{padId(id)}</span>
         </h2>
 

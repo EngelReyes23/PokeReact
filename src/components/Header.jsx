@@ -82,7 +82,7 @@ const SearchField = () => {
         onChange={(e) => setValue(e.target.value)}
         placeholder='Buscar pokémon...'
         aria-label='Buscar pokémon'
-        className='w-44 rounded-lg border border-transparent bg-gray-200/70 py-1.5 pl-8 pr-8 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-purple-500 focus:bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:bg-gray-700 sm:w-56'
+        className='w-44 rounded-lg border border-transparent bg-gray-200/70 py-1.5 pl-8 pr-8 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-brand-500 focus:bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:bg-gray-700 sm:w-56'
       />
       {value !== '' && (
         <button
@@ -101,7 +101,7 @@ const SearchField = () => {
 export const Header = () => (
   <header className='sticky top-0 z-20 w-full select-none bg-gray-200/95 px-3 py-3 transition-colors duration-500 dark:bg-gray-800/95 sm:px-4'>
     <div className='container mx-auto flex h-full items-center justify-between gap-4'>
-      <h1 className='text-4xl font-bold text-purple-600'>Pokedux</h1>
+      <h1 className='text-4xl font-bold text-brand-600'>Pokedux</h1>
       <div className='flex items-center gap-3'>
         <SearchField />
         <Toggle />

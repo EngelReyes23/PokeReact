@@ -25,8 +25,7 @@ const styles = (pokemonTypes, percentage) => {
   } else background = TYPES[pokemonTypes[0]].color + percentage
 
   return {
-    background,
-    color: TYPES[pokemonTypes[0]].color
+    background
   }
 }
 
@@ -106,7 +105,7 @@ export const PokemonCard = ({ pokemon }) => {
         />
       </div>
 
-      <p className='-mt-1 text-center text-2xl font-semibold capitalize transition group-hover:font-bold'>
+      <p className='-mt-1 text-center text-2xl font-semibold capitalize text-gray-900 transition group-hover:font-bold'>
         {name}
       </p>
 

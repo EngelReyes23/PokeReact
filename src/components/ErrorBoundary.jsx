@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component {
             <button
               type='button'
               onClick={() => this.setState({ hasError: false, message: null })}
-              className='mt-4 rounded-lg bg-purple-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-purple-600'
+              className='mt-4 rounded-lg bg-brand-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-600'
             >
               Intentar de nuevo
             </button>

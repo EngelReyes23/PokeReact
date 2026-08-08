@@ -78,7 +78,7 @@ export const FilterBar = ({ total }) => {
               type='button'
               aria-pressed={isActive}
               onClick={() => toggleType(type)}
-              className='flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2'
+              className='flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
               style={{
                 color,
                 borderColor: color,
@@ -102,10 +102,10 @@ export const FilterBar = ({ total }) => {
               type='button'
               aria-pressed={isActive}
               onClick={() => toggleGeneration(id)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 ${
+              className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
                 isActive
-                  ? 'border-purple-500 bg-purple-500 text-white'
-                  : 'border-gray-300 bg-white text-gray-600 hover:border-purple-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
+                  ? 'border-brand-500 bg-brand-500 text-white'
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-brand-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
               }`}
             >
               Gen {label} ({id})
@@ -119,7 +119,7 @@ export const FilterBar = ({ total }) => {
           type='button'
           aria-pressed={favOnly}
           onClick={toggleFavOnly}
-          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 ${
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
             favOnly
               ? 'border-red-500 bg-red-500 text-white'
               : 'border-gray-300 bg-white text-gray-600 hover:border-red-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
@@ -134,7 +134,7 @@ export const FilterBar = ({ total }) => {
           <select
             value={sortBy}
             onChange={(e) => updateParams([{ key: 'sort', value: e.target.value || null }])}
-            className='rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 outline-none focus:border-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+            className='rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
           >
             {SORTS.map(({ id, label }) => (
               <option key={id} value={id}>

@@ -137,7 +137,7 @@ export const PokemonModal = () => {
       />
       <div
         ref={scope}
-        style={{ color: typeColor, opacity: 0 }}
+        style={{ opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'
@@ -164,7 +164,7 @@ export const PokemonModal = () => {
           </span>
 
           <div className='flex items-center justify-center gap-3'>
-            <h2 className='text-3xl font-bold capitalize'>{name}</h2>
+            <h2 className='text-3xl font-bold capitalize text-gray-900'>{name}</h2>
             <FavoriteButton name={name} />
           </div>
 
@@ -197,7 +197,7 @@ export const PokemonModal = () => {
                       </span>
                       <div className='h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600'>
                         <div
-                          className='h-full rounded-full bg-purple-500'
+                          className='h-full rounded-full bg-brand-500'
                           style={{ width: `${Math.min(100, stat.base_stat)}%` }}
                         />
                       </div>
@@ -242,7 +242,7 @@ export const PokemonModal = () => {
               e.stopPropagation()
               close()
             }}
-            className='mt-2 inline-block font-semibold text-purple-600 underline-offset-2 hover:underline dark:text-purple-400'
+            className='mt-2 inline-block font-semibold text-brand-600 underline-offset-2 hover:underline dark:text-brand-300'
           >
             Ver más detalles →
           </Link>
