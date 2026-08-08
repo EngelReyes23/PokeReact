@@ -4,32 +4,11 @@ import { Link, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
 import { FavoriteButton } from './FavoriteButton'
-import { IconType } from './IconType'
 import { setOpenPokemonId, setActivePokemon, setPokemonSourceRect } from '../slices/pokeState'
+import { TYPES } from '../constants/types'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
-
-const typesColors = {
-  bug: { color: '#94BC4A', icon: <IconType letter='b' /> },
-  ice: { color: '#70CBD4', icon: <IconType letter='i' /> },
-  dark: { color: '#736C75', icon: <IconType letter='d' /> },
-  fire: { color: '#EA7A3C', icon: <IconType letter='r' /> },
-  rock: { color: '#B2A061', icon: <IconType letter='k' /> },
-  water: { color: '#539AE2', icon: <IconType letter='w' /> },
-  fairy: { color: '#E397D1', icon: <IconType letter='y' /> },
-  ghost: { color: '#846AB6', icon: <IconType letter='h' /> },
-  grass: { color: '#71C558', icon: <IconType letter='g' /> },
-  steel: { color: '#89A1B0', icon: <IconType letter='m' /> },
-  dragon: { color: '#6A7BAF', icon: <IconType letter='n' /> },
-  flying: { color: '#7DA6DE', icon: <IconType letter='v' /> },
-  ground: { color: '#CC9F4F', icon: <IconType letter='a' /> },
-  normal: { color: '#AAB09F', icon: <IconType letter='c' /> },
-  poison: { color: '#B468B7', icon: <IconType letter='o' /> },
-  psychic: { color: '#E5709B', icon: <IconType letter='p' /> },
-  fighting: { color: '#CB5F48', icon: <IconType letter='f' /> },
-  electric: { color: '#E5C531', icon: <IconType letter='l' /> }
-}
 
 const STAT_LABELS = {
   hp: 'HP',
@@ -146,7 +125,7 @@ export const PokemonModal = () => {
 
   const { name, types, sprites } = pokemon
   const pokemonTypes = types?.map((type) => type.type.name) || []
-  const typeColor = typesColors[pokemonTypes[0]]?.color || '#94BC4A'
+  const typeColor = TYPES[pokemonTypes[0]]?.color || TYPES.bug.color
 
   return (
     <>
@@ -191,12 +170,7 @@ export const PokemonModal = () => {
 
           <div className='flex items-center justify-center gap-2'>
             {pokemonTypes.map((type) => (
-              <Badge
-                key={type}
-                type={type}
-                icon={typesColors[type].icon}
-                color={typesColors[type].color}
-              />
+              <Badge key={type} type={type} {...TYPES[type]} />
             ))}
           </div>
 

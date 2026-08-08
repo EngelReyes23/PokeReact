@@ -1,27 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { HeartIcon } from './FavoriteButton'
 import { IconType } from './IconType'
-
-const TYPE_CHIPS = [
-  { type: 'bug', color: '#94BC4A' },
-  { type: 'ice', color: '#70CBD4' },
-  { type: 'dark', color: '#736C75' },
-  { type: 'fire', color: '#EA7A3C' },
-  { type: 'rock', color: '#B2A061' },
-  { type: 'water', color: '#539AE2' },
-  { type: 'fairy', color: '#E397D1' },
-  { type: 'ghost', color: '#846AB6' },
-  { type: 'grass', color: '#71C558' },
-  { type: 'steel', color: '#89A1B0' },
-  { type: 'dragon', color: '#6A7BAF' },
-  { type: 'flying', color: '#7DA6DE' },
-  { type: 'ground', color: '#CC9F4F' },
-  { type: 'normal', color: '#AAB09F' },
-  { type: 'poison', color: '#B468B7' },
-  { type: 'psychic', color: '#E5709B' },
-  { type: 'fighting', color: '#CB5F48' },
-  { type: 'electric', color: '#E5C531' }
-]
+import { TYPES } from '../constants/types'
 
 const GENERATIONS = [
   { id: '1', label: 'Kanto' },
@@ -90,7 +70,7 @@ export const FilterBar = ({ total }) => {
     <div className='mx-auto flex w-full max-w-[1700px] flex-col gap-4 px-4 py-4'>
       <div className='flex flex-wrap items-center gap-2'>
         <span className='text-sm font-semibold text-gray-500 dark:text-gray-400'>Tipo:</span>
-        {TYPE_CHIPS.map(({ type, color }) => {
+        {Object.entries(TYPES).map(([type, { color, letter }]) => {
           const isActive = activeTypes.includes(type)
           return (
             <button
@@ -105,7 +85,7 @@ export const FilterBar = ({ total }) => {
                 backgroundColor: isActive ? `${color}40` : 'transparent'
               }}
             >
-              <IconType letter={type[0]} />
+              <IconType letter={letter} />
               <span className='capitalize'>{type}</span>
             </button>
           )

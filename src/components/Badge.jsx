@@ -1,12 +1,14 @@
-export const Badge = ({ type, icon, color }) => (
+import { IconType } from './IconType'
+
+export const Badge = ({ type, color, letter }) => (
   <div
     style={{
       color,
       backgroundColor: `${color}50`
     }}
-    className='text-md flex items-center gap-1 rounded-full border-current px-3 py-0.5 font-semibold group-hover:border'
+    className='flex items-center gap-1 rounded-full border-current px-3 py-0.5 text-base font-semibold group-hover:border'
   >
-    <div>{icon}</div>
+    <IconType letter={letter} />
     <span>{type}</span>
   </div>
 )
