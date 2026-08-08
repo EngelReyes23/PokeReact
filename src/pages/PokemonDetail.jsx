@@ -121,24 +121,36 @@ export const PokemonDetail = () => {
     <section className='container mx-auto flex flex-col gap-4 px-4 py-6 text-gray-900 dark:text-gray-100'>
       <BackButton search={search} />
 
-      <Card className='flex flex-col items-center gap-5 p-6 sm:flex-row sm:items-center sm:gap-6'>
-        <span className='shrink-0 rounded-full' style={{ backgroundColor: `${typeColor}50` }}>
-          <img src={image} alt={name} className='h-36 w-36 object-cover sm:h-40 sm:w-40' />
-        </span>
+      <Card className='relative flex items-center justify-center overflow-hidden p-4 sm:p-5'>
+        <div
+          aria-hidden='true'
+          className='pointer-events-none absolute inset-0'
+          style={{
+            background: `linear-gradient(135deg, ${typeColor}40 0%, transparent 60%)`
+          }}
+        />
 
-        <div className='flex w-full flex-col gap-3 text-center sm:text-left'>
-          <div className='flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 sm:justify-between'>
-            <h1 className='text-h1 capitalize text-gray-900 dark:text-gray-100'>{name}</h1>
-            <span className='rounded-full bg-gray-100 px-2.5 py-0.5 font-mono text-caption text-gray-500 dark:bg-gray-700 dark:text-gray-300'>
-              {padId(id)}
-            </span>
-          </div>
+        <div className='relative flex flex-col items-center gap-4 sm:flex-row sm:gap-8'>
+          <span className='shrink-0 rounded-full' style={{ backgroundColor: `${typeColor}50` }}>
+            <img src={image} alt={name} className='h-40 w-40 object-cover sm:h-48 sm:w-48' />
+          </span>
 
-          <div className='flex flex-wrap justify-center gap-2 sm:justify-start'>
-            {types.map((type) => {
-              const t = type.type.name
-              return <Badge key={t} type={t} {...TYPES[t]} />
-            })}
+          <div className='flex w-full flex-col gap-2 text-center sm:text-left'>
+            <div className='flex flex-wrap items-start justify-center gap-x-4 gap-y-1 sm:justify-between'>
+              <h1 className='text-display capitalize tracking-tight text-gray-900 dark:text-gray-100 sm:text-[40px] sm:leading-[44px]'>
+                {name}
+              </h1>
+              <span className='rounded-full bg-gray-100 px-2.5 py-0.5 font-mono text-caption text-gray-500 dark:bg-gray-700 dark:text-gray-300'>
+                {padId(id)}
+              </span>
+            </div>
+
+            <div className='flex flex-wrap justify-center gap-2 sm:justify-start'>
+              {types.map((type) => {
+                const t = type.type.name
+                return <Badge key={t} type={t} {...TYPES[t]} />
+              })}
+            </div>
           </div>
         </div>
       </Card>
