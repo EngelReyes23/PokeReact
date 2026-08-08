@@ -44,6 +44,15 @@
 - [x] **Phase 6 — Filters**: URL is the single source of truth (`?search=&type=fire,flying&gen=1&sort=id&page=N`). New `useFilteredList` hook = pipeline filter (search ∩ type intersection ∩ generation) -> sort (id/name/total-stats) -> paginate client-side over the full subset (20/page). New `FilterBar.jsx`: type chips (multi, with IconType + aria-pressed), generation chips (1-9), sort select, results counter, "Limpiar filtros". `typeCache` + `generationCache` in pokeState, thunks `fetchTypeList`/`fetchGenerationList` (cache-first), persisted in IndexedDB + hydrated in main.jsx. Home hydrates Redux from URL params on mount/change. `usePagination` now reads/writes `?page=N` and merges with other params (no longer resets). Sort by stat only uses already-cached pokemon (uncached go last, no mass fetches). Modal "Ver más detalles" and Detail "Volver" preserve the full query string. Commit 0e2f8a4.
 - [ ] **Phase 7 — Extras**
 
+## Design system (applied, in master)
+
+- Centralised type map `src/constants/types.js` (base color + derived `-700` dark variant for badge contrast + Essentiarum letter) — deduplicates 4 copies.
+- Tokens in `tailwind.config.cjs`: `brand` (50-700), `surface`/`bg`/`line`/`muted`/`text`, radius sm/md/lg (8/12/16px), one shadow family (sm/md/lg), type scale (`caption/label/h2/h1/display`).
+- Single accent brand-500: Pokémon name `text-gray-900` (+ `dark:text-gray-100`) in grid/modal/detail; stat bars, links, buttons in `brand`; type only tints card bg + badges.
+- `Card` primitive (`rounded-lg shadow-md bg-surface dark:bg-gray-800`, `as` prop, forwardRef) used in grid, modal, detail blocks and evolution line; no border+shadow combined; active evolution card = Card + `ring-2 ring-brand-500`.
+- `StatBlock` shared by modal (`layout="list"`) and detail (`layout="grid"` 2x3) — grid layout ready for the detail dashboard redesign.
+- Badges: `bg tipo/15` + `tipo-700` text (WCAG AA light) with CSS-var dark variant; favorite heart `brand-500` filled / muted outline; "Solo favoritos" chip in brand. "Limpiar filtros" keeps red (reset affordance).
+
 ## Known notes / decisions
 
 - Search text filtering is **100% client-side** against `allPokemonNames` (already in memory) -> typing does NOT consume network data. The 300ms debounce only reduces React re-renders.
