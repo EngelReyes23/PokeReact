@@ -153,7 +153,7 @@ export const PokemonDetail = () => {
           aria-hidden='true'
           className='pointer-events-none absolute inset-0 z-0'
           style={{
-            background: `linear-gradient(135deg, ${typeColor}40 0%, transparent 60%)`
+            background: `radial-gradient(ellipse at 50% 40%, ${typeColor}40 0%, transparent 70%)`
           }}
         />
 
