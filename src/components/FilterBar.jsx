@@ -70,7 +70,7 @@ export const FilterBar = ({ total }) => {
     <div className='mx-auto flex w-full max-w-[1700px] flex-col gap-6 px-4 py-4'>
       <div className='flex flex-wrap items-center gap-2'>
         <span className='text-sm font-semibold text-gray-500 dark:text-gray-400'>Tipo:</span>
-        {Object.entries(TYPES).map(([type, { color, letter }]) => {
+        {Object.entries(TYPES).map(([type, { color, dark, letter }]) => {
           const isActive = activeTypes.includes(type)
           return (
             <button
@@ -80,7 +80,7 @@ export const FilterBar = ({ total }) => {
               onClick={() => toggleType(type)}
               className='flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
               style={{
-                color,
+                color: dark,
                 borderColor: color,
                 backgroundColor: isActive ? `${color}40` : 'transparent'
               }}
@@ -121,8 +121,8 @@ export const FilterBar = ({ total }) => {
           onClick={toggleFavOnly}
           className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
             favOnly
-              ? 'border-red-500 bg-red-500 text-white'
-              : 'border-gray-300 bg-white text-gray-600 hover:border-red-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
+              ? 'border-brand-500 bg-brand-500 text-white'
+              : 'border-gray-300 bg-white text-gray-600 hover:border-brand-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
           }`}
         >
           <HeartIcon filled={favOnly} />

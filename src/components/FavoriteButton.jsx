@@ -42,8 +42,8 @@ export const FavoriteButton = ({ name, className = '' }) => {
       onKeyDown={(e) => e.stopPropagation()}
       className={`flex h-9 w-9 items-center justify-center rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
         isFavorite
-          ? 'text-red-500'
-          : 'text-gray-400 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400'
+          ? 'text-brand-500'
+          : 'text-gray-400 hover:text-brand-300 dark:text-gray-500 dark:hover:text-brand-300'
       } ${className}`}
     >
       <HeartIcon filled={isFavorite} />
