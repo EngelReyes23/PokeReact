@@ -3,6 +3,7 @@ import { useAnimate, usePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
+import { Card } from './Card'
 import { FavoriteButton } from './FavoriteButton'
 import { setOpenPokemonId, setActivePokemon, setPokemonSourceRect } from '../slices/pokeState'
 import { TYPES } from '../constants/types'
@@ -135,14 +136,14 @@ export const PokemonModal = () => {
         style={{ opacity: 0 }}
         onClick={close}
       />
-      <div
+      <Card
         ref={scope}
         style={{ opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'
         aria-label={`Detalles de ${name}`}
-        className='fixed inset-0 z-50 m-auto h-fit max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-2xl dark:bg-gray-800'
+        className='fixed inset-0 z-50 m-auto h-fit max-h-[90vh] w-full max-w-md overflow-y-auto p-6 shadow-lg'
       >
         <button
           type='button'
@@ -164,7 +165,7 @@ export const PokemonModal = () => {
           </span>
 
           <div className='flex items-center justify-center gap-3'>
-            <h2 className='text-3xl font-bold capitalize text-gray-900'>{name}</h2>
+            <h2 className='text-h2 capitalize text-gray-900 dark:text-gray-100'>{name}</h2>
             <FavoriteButton name={name} />
           </div>
 
@@ -247,7 +248,7 @@ export const PokemonModal = () => {
             Ver más detalles →
           </Link>
         </div>
-      </div>
+      </Card>
     </>
   )
 }

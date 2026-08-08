@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Badge } from '../components/Badge'
+import { Card } from '../components/Card'
 import { Spinner } from '../components/Spinner'
 import { fetchPokemonDetail, fetchEvolutionChain } from '../slices/thunks'
 import { imageFrom } from '../utils/evolution'
@@ -38,7 +39,7 @@ const BackButton = ({ search }) => (
 const StatBars = ({ stats }) => (
   <section className='w-full'>
     <h3 className='mb-3 text-xl font-semibold'>Stats</h3>
-    <div className='overflow-hidden rounded-xl bg-white shadow-md dark:bg-gray-800'>
+    <Card className='overflow-hidden'>
       {stats.map((stat) => (
         <div
           key={stat.stat.name}
@@ -56,7 +57,7 @@ const StatBars = ({ stats }) => (
           </div>
         </div>
       ))}
-    </div>
+    </Card>
   </section>
 )
 
@@ -91,17 +92,16 @@ const EvolutionChain = ({ evolution, currentName }) => (
                   <span className='italic'>{evo.condition || 'Desconocido'}</span>
                 </div>
               )}
-              <Link
+              <Card
+                as={Link}
                 to={`/pokemon/${evo.name}`}
-                className={`flex w-44 flex-col items-center gap-1 rounded-xl p-3 shadow-sm transition-transform hover:scale-105 ${
-                evo.name === currentName
-                  ? 'bg-brand-200 ring-brand-400 dark:bg-brand-800 ring-2'
-                  : 'bg-white dark:bg-gray-800'
+                className={`flex w-44 flex-col items-center gap-1 p-3 transition-transform hover:scale-105 ${
+                evo.name === currentName ? 'ring-2 ring-brand-500' : ''
               }`}
               >
                 <img src={evo.sprite} alt={evo.name} className='h-20 w-20 object-contain' />
                 <span className='text-sm font-semibold capitalize'>{evo.name}</span>
-              </Link>
+              </Card>
             </div>
           ))}
         </div>
@@ -196,7 +196,7 @@ export const PokemonDetail = () => {
           <img src={image} alt={name} className='h-56 w-56 object-cover' />
         </span>
 
-        <h2 className='text-4xl font-bold capitalize text-gray-900'>
+        <h2 className='text-h1 capitalize text-gray-900 dark:text-gray-100'>
           {name} <span className='font-mono text-gray-400'>{padId(id)}</span>
         </h2>
 
@@ -209,21 +209,21 @@ export const PokemonDetail = () => {
       </div>
 
       {flavorText && (
-        <blockquote className='max-w-xl rounded-xl bg-white/50 p-4 text-center italic shadow-sm dark:bg-gray-800/50'>
+        <blockquote className='max-w-xl rounded-lg bg-white/50 p-4 text-center italic shadow-md dark:bg-gray-800/50'>
           “{flavorText}”
         </blockquote>
       )}
 
       <div className='flex w-full max-w-xl flex-col gap-6'>
         <div className='grid grid-cols-2 gap-3'>
-          <div className='rounded-xl bg-white p-4 text-center shadow-sm dark:bg-gray-800'>
+          <Card className='p-4 text-center'>
             <p className='text-sm text-gray-500'>Peso</p>
             <p className='text-xl font-bold'>{pokemon.weight / 10} kg</p>
-          </div>
-          <div className='rounded-xl bg-white p-4 text-center shadow-sm dark:bg-gray-800'>
+          </Card>
+          <Card className='p-4 text-center'>
             <p className='text-sm text-gray-500'>Altura</p>
             <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
-          </div>
+          </Card>
         </div>
 
         {stats && <StatBars stats={stats} />}

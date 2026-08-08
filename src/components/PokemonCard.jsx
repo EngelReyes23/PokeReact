@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
+import { Card } from './Card'
 import { FavoriteButton } from './FavoriteButton'
 import {
   setOpenPokemonId,
@@ -15,14 +15,14 @@ import { TYPES } from '../constants/types'
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
 
-const styles = (pokemonTypes, percentage) => {
+const styles = (pokemonTypes, alpha) => {
   let background = ''
 
   if (pokemonTypes.length > 1) {
     background = `linear-gradient(0deg, ${pokemonTypes
-      .map((type) => TYPES[type].color + percentage)
+      .map((type) => TYPES[type].color + alpha)
       .join(', ')})`
-  } else background = TYPES[pokemonTypes[0]].color + percentage
+  } else background = TYPES[pokemonTypes[0]].color + alpha
 
   return {
     background
@@ -73,7 +73,7 @@ export const PokemonCard = ({ pokemon }) => {
   }, [openPokemonId, cached, name, dispatch])
 
   return (
-    <motion.div
+    <Card
       ref={cardRef}
       onClick={open}
       onKeyDown={(e) => {
@@ -84,8 +84,8 @@ export const PokemonCard = ({ pokemon }) => {
       }}
       role='button'
       tabIndex={0}
-      style={styles(pokemonTypes, 50)}
-      className='animate__animated animate__fadeIn group relative flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl border-current py-2.5 shadow-md transition-transform hover:scale-110 hover:border'
+      style={styles(pokemonTypes, '26')}
+      className='animate__animated animate__fadeIn group relative flex max-h-full min-h-[250px] w-[250px] cursor-pointer select-none flex-col items-center justify-center gap-2 p-4 transition-transform hover:scale-110 hover:shadow-lg'
     >
       <FavoriteButton
         name={name}
@@ -93,8 +93,8 @@ export const PokemonCard = ({ pokemon }) => {
       />
 
       <div
-        className='min-h-[150px] w-1/2 min-w-[150px] rounded-full border-current transition group-hover:border'
-        style={styles(pokemonTypes, 50)}
+        className='min-h-[150px] w-1/2 min-w-[150px] rounded-full'
+        style={styles(pokemonTypes, '50')}
       >
         <img
           alt={name}
@@ -105,7 +105,7 @@ export const PokemonCard = ({ pokemon }) => {
         />
       </div>
 
-      <p className='-mt-1 text-center text-2xl font-semibold capitalize text-gray-900 transition group-hover:font-bold'>
+      <p className='-mt-1 text-center text-h2 capitalize text-gray-900 dark:text-gray-100'>
         {name}
       </p>
 
@@ -114,7 +114,7 @@ export const PokemonCard = ({ pokemon }) => {
           <Badge key={type} type={type} {...TYPES[type]} />
         ))}
       </div>
-    </motion.div>
+    </Card>
   )
 }
 // #endregion Component

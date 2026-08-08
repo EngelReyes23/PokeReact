@@ -1,4 +1,5 @@
 export { Badge } from './Badge'
+export { Card } from './Card'
 export { ContentPage } from './ContentPage'
 export { ErrorBoundary } from './ErrorBoundary'
 export { FavoriteButton } from './FavoriteButton'

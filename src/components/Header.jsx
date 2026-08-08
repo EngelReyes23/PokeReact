@@ -101,7 +101,7 @@ const SearchField = () => {
 export const Header = () => (
   <header className='sticky top-0 z-20 w-full select-none bg-gray-200/95 px-3 py-3 transition-colors duration-500 dark:bg-gray-800/95 sm:px-4'>
     <div className='container mx-auto flex h-full items-center justify-between gap-4'>
-      <h1 className='text-4xl font-bold text-brand-600'>Pokedux</h1>
+      <h1 className='text-display text-brand-600'>Pokedux</h1>
       <div className='flex items-center gap-3'>
         <SearchField />
         <Toggle />
