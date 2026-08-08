@@ -67,7 +67,7 @@ export const FilterBar = ({ total }) => {
     Boolean(searchParams.get('search')) || activeTypes.length > 0 || generation || favOnly
 
   return (
-    <div className='mx-auto flex w-full max-w-[1700px] flex-col gap-4 px-4 py-4'>
+    <div className='mx-auto flex w-full max-w-[1700px] flex-col gap-6 px-4 py-4'>
       <div className='flex flex-wrap items-center gap-2'>
         <span className='text-sm font-semibold text-gray-500 dark:text-gray-400'>Tipo:</span>
         {Object.entries(TYPES).map(([type, { color, letter }]) => {

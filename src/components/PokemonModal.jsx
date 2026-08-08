@@ -5,20 +5,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
 import { Card } from './Card'
 import { FavoriteButton } from './FavoriteButton'
+import { StatBlock } from './StatBlock'
 import { setOpenPokemonId, setActivePokemon, setPokemonSourceRect } from '../slices/pokeState'
 import { TYPES } from '../constants/types'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
-
-const STAT_LABELS = {
-  hp: 'HP',
-  attack: 'Atk',
-  defense: 'Def',
-  'special-attack': 'SpA',
-  'special-defense': 'SpD',
-  speed: 'Spe'
-}
 
 const FLY_TRANSITION = { type: 'spring', stiffness: 300, damping: 30 }
 const FADE_TRANSITION = { duration: 0.2, ease: 'easeOut' }
@@ -154,7 +146,7 @@ export const PokemonModal = () => {
           X
         </button>
 
-        <div className='flex flex-col items-center gap-3 text-gray-900 dark:text-gray-100'>
+        <div className='flex flex-col items-center gap-4 text-gray-900 dark:text-gray-100'>
           <span
             className='rounded-full'
             style={{
@@ -186,31 +178,16 @@ export const PokemonModal = () => {
             </span>
           </div>
 
-          <div className='w-full'>
-            <p className='mb-2 text-caption uppercase tracking-wide text-muted'>Stats</p>
-            {pokemon.stats?.length
-              ? (
-                <div className='space-y-1'>
-                  {pokemon.stats.map((stat) => (
-                    <div key={stat.stat.name} className='flex items-center gap-2 text-sm'>
-                      <span className='w-8 shrink-0 font-semibold'>
-                        {STAT_LABELS[stat.stat.name]}
-                      </span>
-                      <div className='h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600'>
-                        <div
-                          className='h-full rounded-full bg-brand-500'
-                          style={{ width: `${Math.min(100, stat.base_stat)}%` }}
-                        />
-                      </div>
-                      <span className='w-6 shrink-0 text-right font-semibold'>{stat.base_stat}</span>
-                    </div>
-                  ))}
-                </div>
-                )
-              : (
+          {pokemon.stats?.length
+            ? (
+              <StatBlock stats={pokemon.stats} />
+              )
+            : (
+              <div className='w-full'>
+                <p className='mb-2 text-caption uppercase tracking-wide text-muted'>Stats</p>
                 <StatSkeleton />
-                )}
-          </div>
+              </div>
+              )}
 
           <div className='w-full'>
             <p className='mb-1 text-caption uppercase tracking-wide text-muted'>Habilidades</p>

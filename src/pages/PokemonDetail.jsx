@@ -4,21 +4,13 @@ import { useDispatch } from 'react-redux'
 import { Badge } from '../components/Badge'
 import { Card } from '../components/Card'
 import { Spinner } from '../components/Spinner'
+import { StatBlock } from '../components/StatBlock'
 import { fetchPokemonDetail, fetchEvolutionChain } from '../slices/thunks'
 import { imageFrom } from '../utils/evolution'
 import { TYPES } from '../constants/types'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
-
-const STAT_LABELS = {
-  hp: 'HP',
-  attack: 'Atk',
-  defense: 'Def',
-  'special-attack': 'SpA',
-  'special-defense': 'SpD',
-  speed: 'Spe'
-}
 
 const getSpanishFlavor = (species) => {
   const entry = species?.flavor_text_entries?.find((e) => e.language?.name === 'es')
@@ -34,31 +26,6 @@ const BackButton = ({ search }) => (
   >
     ← Volver
   </Link>
-)
-
-const StatBars = ({ stats }) => (
-  <section className='w-full'>
-    <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Stats</h3>
-    <Card className='overflow-hidden'>
-      {stats.map((stat) => (
-        <div
-          key={stat.stat.name}
-          className='flex items-center justify-between gap-2 border-b px-4 py-2 text-sm last:border-0 dark:border-gray-700'
-        >
-          <span className='w-24 capitalize'>{STAT_LABELS[stat.stat.name] || stat.stat.name}</span>
-          <div className='flex flex-1 items-center gap-2'>
-            <div className='h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600'>
-              <div
-                className='h-full rounded-full bg-brand-500'
-                style={{ width: `${Math.min(100, stat.base_stat)}%` }}
-              />
-            </div>
-            <span className='w-10 text-right font-semibold'>{stat.base_stat}</span>
-          </div>
-        </div>
-      ))}
-    </Card>
-  </section>
 )
 
 const Abilities = ({ abilities }) => (
@@ -226,7 +193,7 @@ export const PokemonDetail = () => {
           </Card>
         </div>
 
-        {stats && <StatBars stats={stats} />}
+        {stats && <StatBlock stats={stats} layout='grid' />}
         {abilities?.length > 0 && <Abilities abilities={abilities} />}
         <EvolutionChain evolution={evolution} currentName={name} />
       </div>
