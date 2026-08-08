@@ -38,7 +38,7 @@ const BackButton = ({ search }) => (
 
 const StatBars = ({ stats }) => (
   <section className='w-full'>
-    <h3 className='mb-3 text-xl font-semibold'>Stats</h3>
+    <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Stats</h3>
     <Card className='overflow-hidden'>
       {stats.map((stat) => (
         <div
@@ -63,7 +63,7 @@ const StatBars = ({ stats }) => (
 
 const Abilities = ({ abilities }) => (
   <section className='w-full'>
-    <h3 className='mb-3 text-xl font-semibold'>Habilidades</h3>
+    <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Habilidades</h3>
     <ul className='flex flex-wrap gap-2'>
       {abilities.map(({ ability, is_hidden: isHidden }) => (
         <li
@@ -80,14 +80,14 @@ const Abilities = ({ abilities }) => (
 
 const EvolutionChain = ({ evolution, currentName }) => (
   <section className='w-full'>
-    <h3 className='mb-3 text-xl font-semibold'>Línea evolutiva</h3>
+    <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Línea evolutiva</h3>
     {evolution.length
       ? (
         <div className='flex flex-col items-center gap-2'>
           {evolution.map((evo, i) => (
             <div key={evo.id} className='flex flex-col items-center gap-2'>
               {i > 0 && (
-                <div className='flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
+                <div className='flex items-center gap-2 text-sm text-muted'>
                   <span className='text-base leading-none'>↓</span>
                   <span className='italic'>{evo.condition || 'Desconocido'}</span>
                 </div>
@@ -107,7 +107,7 @@ const EvolutionChain = ({ evolution, currentName }) => (
         </div>
         )
       : (
-        <p className='text-sm text-gray-500'>Sin cadena evolutiva.</p>
+        <p className='text-sm text-muted'>Sin cadena evolutiva.</p>
         )}
   </section>
 )
@@ -188,7 +188,7 @@ export const PokemonDetail = () => {
   const flavorText = getSpanishFlavor(species)
 
   return (
-    <section className='container mx-auto flex flex-col items-center gap-6 px-4 py-10'>
+    <section className='container mx-auto flex flex-col items-center gap-6 px-4 py-10 text-gray-900 dark:text-gray-100'>
       <BackButton search={search} />
 
       <div className='flex flex-col items-center gap-3'>
@@ -217,11 +217,11 @@ export const PokemonDetail = () => {
       <div className='flex w-full max-w-xl flex-col gap-6'>
         <div className='grid grid-cols-2 gap-3'>
           <Card className='p-4 text-center'>
-            <p className='text-sm text-gray-500'>Peso</p>
+            <p className='text-label text-muted'>Peso</p>
             <p className='text-xl font-bold'>{pokemon.weight / 10} kg</p>
           </Card>
           <Card className='p-4 text-center'>
-            <p className='text-sm text-gray-500'>Altura</p>
+            <p className='text-label text-muted'>Altura</p>
             <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
           </Card>
         </div>

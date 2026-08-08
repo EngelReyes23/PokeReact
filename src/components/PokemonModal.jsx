@@ -154,7 +154,7 @@ export const PokemonModal = () => {
           X
         </button>
 
-        <div className='flex flex-col items-center gap-3'>
+        <div className='flex flex-col items-center gap-3 text-gray-900 dark:text-gray-100'>
           <span
             className='rounded-full'
             style={{
@@ -176,18 +176,18 @@ export const PokemonModal = () => {
           </div>
 
           <div className='grid w-full grid-cols-2 gap-x-4 gap-y-1 text-sm'>
-            <span className='capitalize'>Altura</span>
+            <span className='text-label capitalize text-muted'>Altura</span>
             <span className='text-right font-semibold'>
               {pokemon.height != null ? `${pokemon.height / 10} m` : '—'}
             </span>
-            <span className='capitalize'>Peso</span>
+            <span className='text-label capitalize text-muted'>Peso</span>
             <span className='text-right font-semibold'>
               {pokemon.weight != null ? `${pokemon.weight / 10} kg` : '—'}
             </span>
           </div>
 
           <div className='w-full'>
-            <p className='mb-2 text-left text-xs font-semibold uppercase opacity-70'>Stats</p>
+            <p className='mb-2 text-caption uppercase tracking-wide text-muted'>Stats</p>
             {pokemon.stats?.length
               ? (
                 <div className='space-y-1'>
@@ -213,7 +213,7 @@ export const PokemonModal = () => {
           </div>
 
           <div className='w-full'>
-            <p className='mb-1 text-xs font-semibold uppercase opacity-70'>Habilidades</p>
+            <p className='mb-1 text-caption uppercase tracking-wide text-muted'>Habilidades</p>
             {pokemon.abilities?.length
               ? (
                 <ul className='space-y-0.5 text-sm'>
