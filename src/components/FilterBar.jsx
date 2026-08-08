@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
+import { HeartIcon } from './FavoriteButton'
 import { IconType } from './IconType'
 
 const TYPE_CHIPS = [
@@ -45,6 +46,7 @@ export const FilterBar = ({ total }) => {
   const activeTypes = (searchParams.get('type') || '').split(',').filter(Boolean)
   const generation = searchParams.get('gen') || ''
   const sortBy = searchParams.get('sort') || 'id'
+  const favOnly = searchParams.get('fav') === '1'
 
   const updateParams = (updates) => {
     const next = new URLSearchParams(searchParams)
@@ -66,17 +68,23 @@ export const FilterBar = ({ total }) => {
     updateParams([{ key: 'gen', value: generation === id ? null : id }])
   }
 
+  const toggleFavOnly = () => {
+    updateParams([{ key: 'fav', value: favOnly ? null : '1' }])
+  }
+
   const clearFilters = () => {
     updateParams([
       { key: 'search', value: null },
       { key: 'type', value: null },
       { key: 'gen', value: null },
+      { key: 'fav', value: null },
       { key: 'sort', value: 'id' },
       { key: 'page', value: null }
     ])
   }
 
-  const hasFilters = Boolean(searchParams.get('search')) || activeTypes.length > 0 || generation
+  const hasFilters =
+    Boolean(searchParams.get('search')) || activeTypes.length > 0 || generation || favOnly
 
   return (
     <div className='mx-auto flex w-full max-w-[1700px] flex-col gap-4 px-4 py-4'>
@@ -127,6 +135,20 @@ export const FilterBar = ({ total }) => {
       </div>
 
       <div className='flex flex-wrap items-center gap-4'>
+        <button
+          type='button'
+          aria-pressed={favOnly}
+          onClick={toggleFavOnly}
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 ${
+            favOnly
+              ? 'border-red-500 bg-red-500 text-white'
+              : 'border-gray-300 bg-white text-gray-600 hover:border-red-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300'
+          }`}
+        >
+          <HeartIcon filled={favOnly} />
+          <span>Solo favoritos</span>
+        </button>
+
         <label className='flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-gray-400'>
           Ordenar por:
           <select

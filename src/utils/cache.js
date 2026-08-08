@@ -4,6 +4,7 @@ const CACHE_KEY = 'pokemonCache'
 const NAMES_CACHE_KEY = 'allPokemonNames'
 const TYPE_CACHE_KEY = 'typeCache'
 const GENERATION_CACHE_KEY = 'generationCache'
+const FAVORITES_KEY = 'favorites'
 
 export const saveCache = async (cache) => {
   try {
@@ -70,5 +71,22 @@ export const loadGenerationCache = async () => {
   } catch (error) {
     console.warn('No se pudo cargar la caché de generaciones', error)
     return {}
+  }
+}
+
+export const saveFavorites = async (favorites) => {
+  try {
+    await set(FAVORITES_KEY, favorites)
+  } catch (error) {
+    console.warn('No se pudieron persistir los favoritos', error)
+  }
+}
+
+export const loadFavorites = async () => {
+  try {
+    return (await get(FAVORITES_KEY)) || []
+  } catch (error) {
+    console.warn('No se pudieron cargar los favoritos', error)
+    return []
   }
 }

@@ -3,6 +3,7 @@ import { useAnimate, usePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
+import { FavoriteButton } from './FavoriteButton'
 import { IconType } from './IconType'
 import { setOpenPokemonId, setActivePokemon, setPokemonSourceRect } from '../slices/pokeState'
 
@@ -183,7 +184,10 @@ export const PokemonModal = () => {
             <img src={imageFrom(sprites)} alt={name} className='h-44 w-44 object-cover' />
           </span>
 
-          <h2 className='text-3xl font-bold capitalize'>{name}</h2>
+          <div className='flex items-center justify-center gap-3'>
+            <h2 className='text-3xl font-bold capitalize'>{name}</h2>
+            <FavoriteButton name={name} />
+          </div>
 
           <div className='flex items-center justify-center gap-2'>
             {pokemonTypes.map((type) => (

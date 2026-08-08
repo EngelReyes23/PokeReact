@@ -17,6 +17,8 @@ const initialState = {
   activeTypes: [],
   generation: null,
   sortBy: 'id',
+  favorites: [],
+  favOnly: false,
   typeCache: {},
   generationCache: {}
 }
@@ -70,6 +72,21 @@ export const pokeState = createSlice({
     setSortBy: (state, action) => {
       state.sortBy = action.payload
     },
+    toggleFavorite: (state, action) => {
+      const name = action.payload
+      const exists = state.favorites.includes(name)
+      if (exists) {
+        state.favorites = state.favorites.filter((fav) => fav !== name)
+      } else {
+        state.favorites.push(name)
+      }
+    },
+    hydrateFavorites: (state, action) => {
+      state.favorites = action.payload
+    },
+    setFavOnly: (state, action) => {
+      state.favOnly = action.payload
+    },
     setTypeCache: (state, action) => {
       const { type, data } = action.payload
       state.typeCache[type] = data
@@ -101,6 +118,9 @@ export const {
   setActiveTypes,
   setGeneration,
   setSortBy,
+  toggleFavorite,
+  hydrateFavorites,
+  setFavOnly,
   setTypeCache,
   hydrateTypeCache,
   setGenerationCache,

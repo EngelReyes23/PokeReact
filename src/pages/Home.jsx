@@ -10,23 +10,37 @@ import {
   Spinner,
   PokemonCardSkeleton
 } from '../components'
-import { setSearchTerm, setActiveTypes, setGeneration, setSortBy } from '../slices/pokeState'
+import {
+  setSearchTerm,
+  setActiveTypes,
+  setGeneration,
+  setSortBy,
+  setFavOnly
+} from '../slices/pokeState'
 import { useFilteredList } from '../Hooks/useFilteredList'
 
 const SCROLL_KEY = 'pokeduxHomeScroll'
 
 const SORTS = ['id', 'name', 'stat']
 
-const EmptyResults = () => (
+const EmptyResults = ({ favoritesOnly, hasFavorites }) => (
   <div className='flex flex-col items-center gap-2 py-16 text-center text-gray-500 dark:text-gray-400'>
-    <p className='text-3xl font-bold text-gray-400 dark:text-gray-600'>Sin resultados</p>
-    <p>Prueba con otros filtros o términos de búsqueda.</p>
+    <p className='text-3xl font-bold text-gray-400 dark:text-gray-600'>
+      {favoritesOnly && !hasFavorites ? 'Aún no tienes favoritos' : 'Sin resultados'}
+    </p>
+    <p>
+      {favoritesOnly && !hasFavorites
+        ? 'Toca el corazón de un pokémon para guardarlo aquí.'
+        : 'Prueba con otros filtros o términos de búsqueda.'}
+    </p>
   </div>
 )
 
 export const Home = () => {
   const dispatch = useDispatch()
   const openPokemonId = useSelector((state) => state.pokeState.openPokemonId)
+  const favOnly = useSelector((state) => state.pokeState.favOnly)
+  const hasFavorites = useSelector((state) => state.pokeState.favorites.length > 0)
   const [searchParams] = useSearchParams()
 
   // URL que alimenta el pipeline: nutriendo Redux para que useFilteredList lo lea
@@ -36,6 +50,7 @@ export const Home = () => {
     dispatch(setGeneration(searchParams.get('gen') || null))
     const sort = searchParams.get('sort') || 'id'
     dispatch(setSortBy(SORTS.includes(sort) ? sort : 'id'))
+    dispatch(setFavOnly(searchParams.get('fav') === '1'))
   }, [searchParams, dispatch])
 
   const { workingList, filtersLoading, namesLoading } = useFilteredList()
@@ -71,7 +86,7 @@ export const Home = () => {
               <ContentPage workingList={workingList} />
               )
             : (
-              <EmptyResults />
+              <EmptyResults favoritesOnly={favOnly} hasFavorites={hasFavorites} />
               ))}
 
       <ErrorBoundary>

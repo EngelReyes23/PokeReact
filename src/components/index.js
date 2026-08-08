@@ -1,6 +1,7 @@
 export { Badge } from './Badge'
 export { ContentPage } from './ContentPage'
 export { ErrorBoundary } from './ErrorBoundary'
+export { FavoriteButton } from './FavoriteButton'
 export { FilterBar } from './FilterBar'
 export { Footer } from './Footer'
 export { Header } from './Header'

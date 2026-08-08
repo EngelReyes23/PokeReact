@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from './Badge'
+import { FavoriteButton } from './FavoriteButton'
 import { IconType } from './IconType'
 import {
   setOpenPokemonId,
@@ -106,8 +107,13 @@ export const PokemonCard = ({ pokemon }) => {
       role='button'
       tabIndex={0}
       style={styles(pokemonTypes, 50)}
-      className='animate__animated animate__fadeIn shadow-current/50 group flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl border-current py-2.5 transition-transform hover:scale-110 hover:border'
+      className='animate__animated animate__fadeIn shadow-current/50 group relative flex max-h-full min-h-[250px] w-[250px] transform cursor-pointer select-none flex-col items-center justify-center gap-2 rounded-xl border-current py-2.5 transition-transform hover:scale-110 hover:border'
     >
+      <FavoriteButton
+        name={name}
+        className='absolute right-2 top-2 z-10 bg-white/40 backdrop-blur-sm dark:bg-gray-900/40'
+      />
+
       <div
         className='min-h-[150px] w-1/2 min-w-[150px] rounded-full border-current transition group-hover:border'
         style={styles(pokemonTypes, 50)}

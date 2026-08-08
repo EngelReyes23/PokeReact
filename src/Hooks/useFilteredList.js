@@ -20,6 +20,8 @@ export const useFilteredList = () => {
   const activeTypes = useSelector((state) => state.pokeState.activeTypes)
   const generation = useSelector((state) => state.pokeState.generation)
   const sortBy = useSelector((state) => state.pokeState.sortBy)
+  const favorites = useSelector((state) => state.pokeState.favorites)
+  const favOnly = useSelector((state) => state.pokeState.favOnly)
   const typeCache = useSelector((state) => state.pokeState.typeCache)
   const generationCache = useSelector((state) => state.pokeState.generationCache)
 
@@ -72,6 +74,11 @@ export const useFilteredList = () => {
       filtered = filtered.filter(({ name }) => genSet.has(name))
     }
 
+    if (favOnly) {
+      const favSet = new Set(favorites)
+      filtered = filtered.filter(({ name }) => favSet.has(name))
+    }
+
     const sorted = [...filtered]
 
     if (sortBy === 'name') {
@@ -105,6 +112,8 @@ export const useFilteredList = () => {
     generation,
     generationCache,
     sortBy,
+    favOnly,
+    favorites,
     filtersLoading
   ])
 
