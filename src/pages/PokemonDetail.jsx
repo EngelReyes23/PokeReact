@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Badge } from '../components/Badge'
 import { Card } from '../components/Card'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { Spinner } from '../components/Spinner'
 import { StatBlock } from '../components/StatBlock'
+import { useAdjacentPokemon } from '../Hooks/useAdjacentPokemon'
 import { fetchPokemonDetail, fetchEvolutionChain } from '../slices/thunks'
 import { imageFrom } from '../utils/evolution'
 import { TYPES } from '../constants/types'
@@ -74,12 +75,21 @@ const Abilities = ({ abilities }) => (
 
 export const PokemonDetail = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { name } = useParams()
   const { search } = useLocation()
   const [pokemon, setPokemon] = useState(null)
   const [species, setSpecies] = useState(null)
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const {
+    prevName,
+    nextName,
+    hasPrev,
+    hasNext,
+    search: navSearch
+  } = useAdjacentPokemon(name, pokemon?.id ?? 0)
 
   useEffect(() => {
     let active = true
@@ -160,7 +170,10 @@ export const PokemonDetail = () => {
         <button
           type='button'
           aria-label='Pokémon anterior'
-          className='dark:hover:text-brand-400 relative z-10 flex shrink-0 items-center justify-center self-center rounded-full p-1.5 text-muted transition-colors hover:bg-gray-100 hover:text-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-gray-700'
+          aria-disabled={!hasPrev}
+          disabled={!hasPrev}
+          onClick={() => navigate(`/pokemon/${prevName}${navSearch}`)}
+          className='dark:hover:text-brand-400 relative z-10 flex shrink-0 items-center justify-center self-center rounded-full p-1.5 text-muted transition-colors hover:bg-gray-100 hover:text-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-gray-700'
         >
           <ChevronLeft />
         </button>
@@ -192,7 +205,10 @@ export const PokemonDetail = () => {
         <button
           type='button'
           aria-label='Pokémon siguiente'
-          className='dark:hover:text-brand-400 relative z-10 flex shrink-0 items-center justify-center self-center rounded-full p-1.5 text-muted transition-colors hover:bg-gray-100 hover:text-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-gray-700'
+          aria-disabled={!hasNext}
+          disabled={!hasNext}
+          onClick={() => navigate(`/pokemon/${nextName}${navSearch}`)}
+          className='dark:hover:text-brand-400 relative z-10 flex shrink-0 items-center justify-center self-center rounded-full p-1.5 text-muted transition-colors hover:bg-gray-100 hover:text-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-gray-700'
         >
           <ChevronRight />
         </button>
