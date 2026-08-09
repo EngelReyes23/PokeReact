@@ -19,59 +19,67 @@ const idFromUrl = (url) => {
   const parts = String(url).split('/').filter(Boolean)
   return parts[parts.length - 1]
 }
+const humanize = (str) => {
+  if (str == null) return ''
+  return str
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
 
 const formatTimeOfDay = (time) => {
-  const map = { day: 'día', night: 'noche', dusk: 'atardecer' }
+  const map = { day: 'day', night: 'night', dusk: 'dusk' }
   return map[time] || time
 }
 
-// Formats the primary evolution trigger into a short Spanish string.
+// Formats the primary evolution trigger into a short English string.
 // Priority for combined conditions: specific condition (level/move/happiness/location)
-// > held_item > time_of_day. Time of day is always appended in parentheses when present.
-// For level-ups where held_item is the main condition and no level is set, the item leads
-// the phrase ("Con {item} de noche") to keep it natural.
+// > held_item > time_of_day. Time of day is appended in parentheses when not the
+// main condition. When held_item is the primary condition with no level, the item
+// leads the phrase ("With {item} at night") for natural reading.
 export const describeTrigger = (details = {}) => {
   const trigger = details.trigger?.name
   if (!trigger) return null
 
-  const time = details.time_of_day ? ` (${formatTimeOfDay(details.time_of_day)})` : ''
-  const heldItem = details.held_item?.name
+  const timeParen = details.time_of_day ? ` (${formatTimeOfDay(details.time_of_day)})` : ''
+  const timeWord = details.time_of_day ? formatTimeOfDay(details.time_of_day) : null
+  const heldItem = details.held_item?.name ? humanize(details.held_item.name) : null
 
   switch (trigger) {
     case 'level-up': {
       let base = null
-      if (details.min_level) base = `Nivel ${details.min_level}`
-      else if (details.known_move?.name) base = `Aprender ${details.known_move.name}`
-      else if (details.known_move_type?.name) { base = `Aprender ataque ${details.known_move_type.name}` } else if (details.min_happiness) base = 'Alta amistad'
-      else if (details.location?.name) base = `En ${details.location.name}`
+      if (details.min_level) base = `Level ${details.min_level}`
+      else if (details.known_move?.name) base = `Learn ${humanize(details.known_move.name)}`
+      else if (details.known_move_type?.name) { base = `Learn a ${humanize(details.known_move_type.name)}-type move` } else if (details.min_happiness) base = 'High friendship'
+      else if (details.location?.name) base = `At ${humanize(details.location.name)}`
 
       if (heldItem) {
-        if (base) return `${base} con ${heldItem}${time}`
-        return `Con ${heldItem}${time}`
+        if (base) return `${base} holding ${heldItem}${timeParen}`
+        if (timeWord) return `With ${heldItem} at ${timeWord}`
+        return `With ${heldItem}`
       }
 
-      return (base || 'Subida de nivel') + time
+      return (base || 'Level up') + timeParen
     }
     case 'trade': {
-      const item = details.item?.name || heldItem
-      if (item) return `Intercambiando con ${item}${time}`
-      return `Intercambio${time}`
+      const item = details.item?.name ? humanize(details.item.name) : heldItem
+      if (item) return `Trade holding ${item}${timeParen}`
+      return `Trade${timeParen}`
     }
     case 'use-item': {
-      if (details.item?.name) return `Usando ${details.item.name}${time}`
-      return trigger.replace(/-/g, ' ') + time
+      if (details.item?.name) return `Using ${humanize(details.item.name)}${timeParen}`
+      return humanize(trigger) + timeParen
     }
     case 'shed':
-      return 'Caparazón'
+      return 'Shed'
     case 'three-critical-hits':
-      return '3 golpes críticos'
+      return '3 critical hits'
     case 'agile-style-move':
-      return 'Movimiento estilo ágil'
+      return 'Agile style move'
     default:
-      return trigger.replace(/-/g, ' ') + time
+      return humanize(trigger) + timeParen
   }
 }
-
 // Public alias for callers that need a clear, intention-revealing name.
 export const formatEvolutionTrigger = describeTrigger
 
