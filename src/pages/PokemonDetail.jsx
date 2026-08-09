@@ -122,6 +122,29 @@ export const PokemonDetail = () => {
     }
   }, [dispatch, name])
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeEl = document.activeElement
+      const isTyping =
+        activeEl?.tagName === 'INPUT' ||
+        activeEl?.tagName === 'TEXTAREA' ||
+        activeEl?.isContentEditable
+
+      if (isTyping) return
+
+      if (e.key === 'ArrowLeft' && hasPrev && prevName) {
+        navigate(`/pokemon/${prevName}${navSearch}`)
+      } else if (e.key === 'ArrowRight' && hasNext && nextName) {
+        navigate(`/pokemon/${nextName}${navSearch}`)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [navigate, prevName, nextName, hasPrev, hasNext, navSearch])
+
   if (error) {
     return (
       <section className='container mx-auto flex flex-col items-center gap-4 px-4 py-10'>
