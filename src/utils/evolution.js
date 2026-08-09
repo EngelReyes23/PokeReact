@@ -20,23 +20,47 @@ const idFromUrl = (url) => {
   return parts[parts.length - 1]
 }
 
+const formatTimeOfDay = (time) => {
+  const map = { day: 'día', night: 'noche', dusk: 'atardecer' }
+  return map[time] || time
+}
+
+// Formats the primary evolution trigger into a short Spanish string.
+// Priority for combined conditions: specific condition (level/move/happiness/location)
+// > held_item > time_of_day. Time of day is always appended in parentheses when present.
+// For level-ups where held_item is the main condition and no level is set, the item leads
+// the phrase ("Con {item} de noche") to keep it natural.
 export const describeTrigger = (details = {}) => {
   const trigger = details.trigger?.name
   if (!trigger) return null
+
+  const time = details.time_of_day ? ` (${formatTimeOfDay(details.time_of_day)})` : ''
+  const heldItem = details.held_item?.name
+
   switch (trigger) {
     case 'level-up': {
-      if (details.min_level) return `Nivel ${details.min_level}`
-      if (details.known_move) return `Aprender ${details.known_move.name}`
-      if (details.min_happiness) return 'Alta amistad'
-      if (details.location) return `En ${details.location.name}`
-      return 'Subida de nivel'
+      let base = null
+      if (details.min_level) base = `Nivel ${details.min_level}`
+      else if (details.known_move?.name) base = `Aprender ${details.known_move.name}`
+      else if (details.known_move_type?.name) { base = `Aprender ataque ${details.known_move_type.name}` } else if (details.min_happiness) base = 'Alta amistad'
+      else if (details.location?.name) base = `En ${details.location.name}`
+
+      if (heldItem) {
+        if (base) return `${base} con ${heldItem}${time}`
+        return `Con ${heldItem}${time}`
+      }
+
+      return (base || 'Subida de nivel') + time
     }
     case 'trade': {
-      if (details.item) return `Intercambiando con ${details.item.name}`
-      return 'Intercambio'
+      const item = details.item?.name || heldItem
+      if (item) return `Intercambiando con ${item}${time}`
+      return `Intercambio${time}`
     }
-    case 'use-item':
-      return `Usando ${details.item?.name}`
+    case 'use-item': {
+      if (details.item?.name) return `Usando ${details.item.name}${time}`
+      return trigger.replace(/-/g, ' ') + time
+    }
     case 'shed':
       return 'Caparazón'
     case 'three-critical-hits':
@@ -44,9 +68,12 @@ export const describeTrigger = (details = {}) => {
     case 'agile-style-move':
       return 'Movimiento estilo ágil'
     default:
-      return trigger.replace(/-/g, ' ')
+      return trigger.replace(/-/g, ' ') + time
   }
 }
+
+// Public alias for callers that need a clear, intention-revealing name.
+export const formatEvolutionTrigger = describeTrigger
 
 // Aplana la cadena evolutiva recursiva en una lista ordenada.
 // Cada evolución se acompaña de la condición (trigger) que la permite.
@@ -70,3 +97,20 @@ export const flattenChain = (chain, cache = {}) => {
 }
 
 export const extractChainId = (url) => idFromUrl(url)
+
+// Builds a normalized recursive tree from a PokeAPI evolution-chain root node.
+// Each node carries its own trigger (null for the base stage) and its children.
+export const buildEvolutionTree = (chain, cache = {}) => {
+  const walk = (node) => {
+    const id = Number(idFromUrl(node.species?.url))
+    const name = node.species?.name
+    const cached = cache?.[name]?.pokemon
+    const spriteUrl = cached ? imageFrom(cached.sprites) : officialArtwork(id)
+    const trigger = describeTrigger(node.evolution_details?.[0])
+    const children = node.evolves_to?.map(walk) || []
+
+    return { name, id, spriteUrl, trigger, children }
+  }
+
+  return chain ? walk(chain) : null
+}

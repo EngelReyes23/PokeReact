@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from '../components/Badge'
 import { Card } from '../components/Card'
 import { FavoriteButton } from '../components/FavoriteButton'
@@ -8,7 +8,7 @@ import { Spinner } from '../components/Spinner'
 import { StatBlock } from '../components/StatBlock'
 import { useAdjacentPokemon } from '../Hooks/useAdjacentPokemon'
 import { fetchPokemonDetail, fetchEvolutionChain } from '../slices/thunks'
-import { imageFrom } from '../utils/evolution'
+import { buildEvolutionTree, imageFrom } from '../utils/evolution'
 import { TYPES } from '../constants/types'
 
 const imageNotFound =
@@ -80,8 +80,16 @@ export const PokemonDetail = () => {
   const { search } = useLocation()
   const [pokemon, setPokemon] = useState(null)
   const [species, setSpecies] = useState(null)
+  const [chainDetail, setChainDetail] = useState(null)
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const pokemonCache = useSelector((state) => state.pokeState.pokemonCache)
+
+  const evolutionTree = useMemo(
+    () => buildEvolutionTree(chainDetail?.chain, pokemonCache),
+    [chainDetail, pokemonCache]
+  )
 
   const {
     prevName,
@@ -108,6 +116,7 @@ export const PokemonDetail = () => {
         if (!active) return
         setPokemon(p[0])
         setSpecies(p[1].species)
+        setChainDetail(p[1].chainDetail)
       } catch (err) {
         if (active) setError(err)
       } finally {
@@ -268,8 +277,26 @@ export const PokemonDetail = () => {
 
         <div className='flex h-full flex-col lg:max-h-[calc(100vh-25rem)] lg:overflow-y-auto lg:pr-1'>
           <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Línea evolutiva</h3>
-          {/* Paso 2: cadena evolutiva vertical con soporte de ramas */}
-          <p className='text-sm text-muted'>Skeleton del Paso 1 — cadena vertical en el Paso 2.</p>
+          {evolutionTree
+            ? (
+                evolutionTree.children.length === 0
+                  ? (
+                    <p className='text-sm text-muted'>Este Pokémon no evoluciona.</p>
+                    )
+                  : (
+                    <ul className='space-y-1 text-sm'>
+                      {evolutionTree.children.map((child) => (
+                        <li key={child.name} className='text-muted'>
+                          → <span className='capitalize'>{child.name}</span>
+                          {child.trigger && <span className='ml-1 text-xs'>({child.trigger})</span>}
+                        </li>
+                      ))}
+                    </ul>
+                    )
+              )
+            : (
+              <p className='text-sm text-muted'>Cargando evolución...</p>
+              )}
         </div>
       </div>
     </section>
