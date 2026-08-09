@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from '../components/Badge'
 import { Card } from '../components/Card'
+import { EvolutionTree } from '../components/EvolutionTree'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { Spinner } from '../components/Spinner'
 import { StatBlock } from '../components/StatBlock'
@@ -277,26 +278,14 @@ export const PokemonDetail = () => {
 
         <div className='flex h-full flex-col lg:max-h-[calc(100vh-25rem)] lg:overflow-y-auto lg:pr-1'>
           <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Línea evolutiva</h3>
-          {evolutionTree
-            ? (
-                evolutionTree.children.length === 0
-                  ? (
-                    <p className='text-sm text-muted'>Este Pokémon no evoluciona.</p>
-                    )
-                  : (
-                    <ul className='space-y-1 text-sm'>
-                      {evolutionTree.children.map((child) => (
-                        <li key={child.name} className='text-muted'>
-                          → <span className='capitalize'>{child.name}</span>
-                          {child.trigger && <span className='ml-1 text-xs'>({child.trigger})</span>}
-                        </li>
-                      ))}
-                    </ul>
-                    )
-              )
-            : (
-              <p className='text-sm text-muted'>Cargando evolución...</p>
-              )}
+          <Card className='flex-1 p-4'>
+            <EvolutionTree
+              tree={evolutionTree}
+              currentName={name}
+              search={search}
+              typeColor={typeColor}
+            />
+          </Card>
         </div>
       </div>
     </section>
