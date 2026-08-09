@@ -10,7 +10,15 @@
 ## Golden rules
 
 - One phase **per branch**, **one commit per step**. Each phase lives on its own git branch; commit at the end with a clear Spanish message.
-- After each step: run `pnpm build` + `pnpm linter` (the script is `linter`, NOT `lint`). No React warnings (keys, useEffect deps).
+- ALWAYS run `pnpm linter` after each step.
+- `pnpm build` is REQUIRED for changes to logic, imports/exports, new/renamed/moved files,
+  hooks, components, routes, state/thunks, config, or dependencies (anything that can break
+  module resolution or bundling).
+- `pnpm build` is OPTIONAL for purely visual/styling changes (Tailwind classes, tokens, spacing,
+  colors, copy) that add/remove no imports and touch no logic — linter + a dev visual check is
+  enough.
+- When in doubt, run `pnpm build`.
+- No React warnings (keys, useEffect deps).
 - **NEVER** `git commit --no-verify`; always respect husky + lint-staged (prettier + standard run on staged files).
 - Do **NOT** read framer-motion or other library internals inside `node_modules` — treat libraries as black boxes.
 - Do **NOT** migrate the app to TypeScript and do **NOT** rewrite it from scratch.
