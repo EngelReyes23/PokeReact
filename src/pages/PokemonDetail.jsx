@@ -249,8 +249,8 @@ export const PokemonDetail = () => {
         <FavoriteButton name={name} className='absolute right-3 top-3 z-20' />
       </Card>
 
-      <div className='grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.2fr_0.9fr] lg:gap-5'>
-        <Card className='flex h-full flex-col gap-4 p-5'>
+      <div className='grid grid-cols-1 gap-4 lg:items-start lg:grid-cols-[1fr_1.2fr_0.9fr] lg:gap-5'>
+        <Card className='flex flex-col gap-4 p-5'>
           <h3 className='text-caption uppercase tracking-wide text-muted'>Pokédex Entry</h3>
           {flavorText && (
             <p className='text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
@@ -258,7 +258,7 @@ export const PokemonDetail = () => {
             </p>
           )}
 
-          <div className='mt-auto grid grid-cols-2 gap-3'>
+          <div className='grid grid-cols-2 gap-3'>
             <div>
               <p className='text-label text-muted'>Altura</p>
               <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
@@ -272,13 +272,13 @@ export const PokemonDetail = () => {
           {abilities?.length > 0 && <Abilities abilities={abilities} />}
         </Card>
 
-        <div className='h-full'>
+        <div>
           <StatBlock stats={stats} layout='grid' />
         </div>
 
-        <div className='flex h-full flex-col lg:max-h-[calc(100vh-25rem)] lg:overflow-y-auto lg:pr-1'>
+        <div className='flex flex-col'>
           <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>Línea evolutiva</h3>
-          <Card className='flex-1 p-4'>
+          <Card className='p-4 lg:max-h-[16rem] lg:overflow-y-auto'>
             <EvolutionTree
               tree={evolutionTree}
               currentName={name}
