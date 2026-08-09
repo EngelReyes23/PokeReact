@@ -11,10 +11,12 @@ const EvolutionNode = ({ node, currentName, search, typeColor }) => {
 
   const content = (
     <div
-      className={`flex items-center gap-2 rounded-full px-2 py-1 transition-transform ${
+      className={`flex items-center gap-2 rounded-full px-2 py-1 transition-transform bg-[var(--evo-tint)] dark:bg-[var(--evo-tint-dark)] ${
         isCurrent ? 'ring-2 ring-brand-500' : 'hover:scale-105'
       }`}
-      style={typeColor ? { backgroundColor: `${typeColor}18` } : {}}
+      style={
+        typeColor ? { '--evo-tint': `${typeColor}18`, '--evo-tint-dark': `${typeColor}30` } : {}
+      }
     >
       <img
         src={node.spriteUrl}

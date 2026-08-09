@@ -148,9 +148,10 @@ export const PokemonModal = () => {
 
         <div className='flex flex-col items-center gap-4 text-gray-900 dark:text-gray-100'>
           <span
-            className='rounded-full'
+            className='shrink-0 rounded-full bg-[var(--modal-tint)] dark:bg-[var(--modal-tint-dark)]'
             style={{
-              backgroundColor: `${typeColor}50`
+              '--modal-tint': `${typeColor}50`,
+              '--modal-tint-dark': `${typeColor}60`
             }}
           >
             <img src={imageFrom(sprites)} alt={name} className='h-44 w-44 object-cover' />

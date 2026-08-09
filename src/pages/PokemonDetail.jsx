@@ -194,9 +194,10 @@ export const PokemonDetail = () => {
       <Card className='relative flex items-stretch overflow-hidden p-3 sm:p-4'>
         <div
           aria-hidden='true'
-          className='pointer-events-none absolute inset-0 z-0'
+          className='pointer-events-none absolute inset-0 z-0 [background:var(--hero-grad)] dark:[background:var(--hero-grad-dark)]'
           style={{
-            background: `radial-gradient(ellipse at 50% 40%, ${typeColor}40 0%, transparent 70%)`
+            '--hero-grad': `radial-gradient(ellipse at 50% 40%, ${typeColor}40 0%, transparent 70%)`,
+            '--hero-grad-dark': `radial-gradient(ellipse at 50% 40%, ${typeColor}55 0%, transparent 70%)`
           }}
         />
 
@@ -212,7 +213,10 @@ export const PokemonDetail = () => {
         </button>
 
         <div className='relative z-10 flex flex-1 flex-col items-center justify-center gap-3 sm:gap-4'>
-          <span className='shrink-0 rounded-full' style={{ backgroundColor: `${typeColor}50` }}>
+          <span
+            className='shrink-0 rounded-full bg-[var(--sprite-tint)] dark:bg-[var(--sprite-tint-dark)]'
+            style={{ '--sprite-tint': `${typeColor}50`, '--sprite-tint-dark': `${typeColor}60` }}
+          >
             <img src={image} alt={name} className='h-36 w-36 object-cover sm:h-48 sm:w-48' />
           </span>
 

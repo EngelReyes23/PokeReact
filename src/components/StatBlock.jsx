@@ -20,9 +20,11 @@ const StatBar = ({ value }) => (
 
 const StatRow = ({ label, value }) => (
   <div className='flex items-center gap-2 text-sm'>
-    <span className='w-8 shrink-0 font-semibold'>{label}</span>
+    <span className='w-8 shrink-0 text-caption tracking-wide text-muted'>{label}</span>
     <StatBar value={value} />
-    <span className='w-6 shrink-0 text-right font-semibold'>{value}</span>
+    <span className='w-6 shrink-0 text-right font-semibold text-gray-900 dark:text-gray-100'>
+      {value}
+    </span>
   </div>
 )
 
