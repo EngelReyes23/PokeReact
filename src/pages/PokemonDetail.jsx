@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from '../components/Badge'
 import { Card } from '../components/Card'
+import { DetailTabs } from '../components/DetailTabs'
 import { EvolutionTree } from '../components/EvolutionTree'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { Spinner } from '../components/Spinner'
@@ -138,12 +139,14 @@ export const PokemonDetail = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const activeEl = document.activeElement
+      const inTablist = activeEl?.closest?.('[role="tablist"]')
       const isTyping =
         activeEl?.tagName === 'INPUT' ||
         activeEl?.tagName === 'TEXTAREA' ||
+        activeEl?.tagName === 'SELECT' ||
         activeEl?.isContentEditable
 
-      if (isTyping) return
+      if (inTablist || isTyping) return
 
       if (e.key === 'ArrowLeft' && hasPrev && prevName) {
         navigate(`/pokemon/${prevName}${navSearch}`)
@@ -200,6 +203,68 @@ export const PokemonDetail = () => {
   const mainType = types[0]?.type?.name
   const typeColor = TYPES[mainType]?.color || TYPES.bug.color
   const flavorText = getSpanishFlavor(species)
+
+  const renderPanel = (tabId) => {
+    if (tabId === 'overview') {
+      return (
+        <div className='grid grid-cols-1 gap-4 lg:items-start lg:grid-cols-[1fr_1.2fr_0.9fr] lg:gap-5'>
+          <Card className='flex flex-col gap-4 p-5' tint={typeTheme.contentSurface(pokemonTypes)}>
+            <h3 className='text-caption uppercase tracking-wide text-muted'>Pokédex Entry</h3>
+            {flavorText && (
+              <p className='text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
+                "{flavorText}"
+              </p>
+            )}
+
+            <div className='grid grid-cols-2 gap-3'>
+              <div>
+                <p className='text-label text-muted'>Altura</p>
+                <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
+              </div>
+              <div>
+                <p className='text-label text-muted'>Peso</p>
+                <p className='text-xl font-bold'>{pokemon.weight / 10} kg</p>
+              </div>
+            </div>
+
+            {abilities?.length > 0 && <Abilities abilities={abilities} />}
+          </Card>
+
+          <div>
+            <StatBlock stats={stats} layout='grid' tint={typeTheme.contentSurface(pokemonTypes)} />
+          </div>
+
+          <div className='flex flex-col'>
+            <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>
+              Línea evolutiva
+            </h3>
+            <Card
+              className='p-4 lg:max-h-[16rem] lg:overflow-y-auto'
+              tint={typeTheme.contentSurface(pokemonTypes)}
+            >
+              <EvolutionTree
+                tree={evolutionTree}
+                currentName={name}
+                search={search}
+                typeColor={typeColor}
+              />
+            </Card>
+          </div>
+        </div>
+      )
+    }
+
+    const labels = {
+      stats: 'Stats',
+      evolution: 'Evolution & Forms',
+      moves: 'Moves'
+    }
+    return (
+      <Card className='flex min-h-[12rem] items-center justify-center p-8'>
+        <p className='text-sm text-muted'>{labels[tabId] || tabId} — content coming soon</p>
+      </Card>
+    )
+  }
 
   return (
     <div className='relative isolate flex flex-1 flex-col [--detail-focal:50%_32%] [--detail-focal-accent:50%_26%] md:[--detail-focal:36%_50%] md:[--detail-focal-accent:36%_44%]'>
@@ -278,50 +343,7 @@ export const PokemonDetail = () => {
           </div>
         </Card>
 
-        <div className='grid grid-cols-1 gap-4 lg:items-start lg:grid-cols-[1fr_1.2fr_0.9fr] lg:gap-5'>
-          <Card className='flex flex-col gap-4 p-5' tint={typeTheme.contentSurface(pokemonTypes)}>
-            <h3 className='text-caption uppercase tracking-wide text-muted'>Pokédex Entry</h3>
-            {flavorText && (
-              <p className='text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
-                “{flavorText}”
-              </p>
-            )}
-
-            <div className='grid grid-cols-2 gap-3'>
-              <div>
-                <p className='text-label text-muted'>Altura</p>
-                <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
-              </div>
-              <div>
-                <p className='text-label text-muted'>Peso</p>
-                <p className='text-xl font-bold'>{pokemon.weight / 10} kg</p>
-              </div>
-            </div>
-
-            {abilities?.length > 0 && <Abilities abilities={abilities} />}
-          </Card>
-
-          <div>
-            <StatBlock stats={stats} layout='grid' tint={typeTheme.contentSurface(pokemonTypes)} />
-          </div>
-
-          <div className='flex flex-col'>
-            <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>
-              Línea evolutiva
-            </h3>
-            <Card
-              className='p-4 lg:max-h-[16rem] lg:overflow-y-auto'
-              tint={typeTheme.contentSurface(pokemonTypes)}
-            >
-              <EvolutionTree
-                tree={evolutionTree}
-                currentName={name}
-                search={search}
-                typeColor={typeColor}
-              />
-            </Card>
-          </div>
-        </div>
+        <DetailTabs renderPanel={renderPanel} />
       </section>
     </div>
   )
