@@ -6,11 +6,13 @@ import { Card } from '../components/Card'
 import { DetailTabs } from '../components/DetailTabs'
 import { EvolutionTree } from '../components/EvolutionTree'
 import { FavoriteButton } from '../components/FavoriteButton'
+import { PokemonAppearanceToggle } from '../components/PokemonAppearanceToggle'
 import { Spinner } from '../components/Spinner'
 import { StatBlock } from '../components/StatBlock'
 import { useAdjacentPokemon } from '../Hooks/useAdjacentPokemon'
 import { fetchPokemonDetail, fetchEvolutionChain } from '../slices/thunks'
-import { buildEvolutionTree, imageFrom } from '../utils/evolution'
+import { buildEvolutionTree } from '../utils/evolution'
+import { hasShinySprite, resolvePokemonSprite } from '../utils/sprites'
 import { TYPES } from '../constants/types'
 import { typeTheme } from '../utils/gradient'
 import { DetailThemeContext } from '../contexts/detailTheme'
@@ -87,6 +89,7 @@ export const PokemonDetail = () => {
   const [chainDetail, setChainDetail] = useState(null)
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [appearance, setAppearance] = useState('normal')
 
   const pokemonCache = useSelector((state) => state.pokeState.pokemonCache)
   const setDetailTheme = useContext(DetailThemeContext)
@@ -171,6 +174,20 @@ export const PokemonDetail = () => {
     return () => setDetailTheme?.(null)
   }, [setDetailTheme, pokemon])
 
+  // Si aparece shiny pero el pokemon cargado no tiene ninguna fuente shiny valida,
+  // vuelve a normal. Solo se aplica cuando el pokemon coincide con la ruta actual,
+  // evitando reseteos por respuestas obsoletas durante navegacion rapida.
+  useEffect(() => {
+    if (
+      appearance === 'shiny' &&
+      pokemon &&
+      pokemon.name === name &&
+      !hasShinySprite(pokemon.sprites)
+    ) {
+      setAppearance('normal')
+    }
+  }, [appearance, pokemon, name])
+
   if (error) {
     return (
       <section className='container mx-auto flex flex-col items-center gap-4 px-4 py-10'>
@@ -199,7 +216,8 @@ export const PokemonDetail = () => {
 
   const { id, types, stats, abilities } = pokemon
   const pokemonTypes = types.map((type) => type.type.name)
-  const image = imageFrom(pokemon.sprites) || imageNotFound
+  const image = resolvePokemonSprite(pokemon.sprites, appearance, imageNotFound)
+  const hasShiny = hasShinySprite(pokemon.sprites)
   const mainType = types[0]?.type?.name
   const typeColor = TYPES[mainType]?.color || TYPES.bug.color
   const flavorText = getSpanishFlavor(species)
@@ -328,6 +346,13 @@ export const PokemonDetail = () => {
                     const t = type.type.name
                     return <Badge key={t} type={t} {...TYPES[t]} />
                   })}
+                </div>
+                <div className='flex justify-center md:justify-start'>
+                  <PokemonAppearanceToggle
+                    appearance={appearance}
+                    onChange={setAppearance}
+                    hasShiny={hasShiny}
+                  />
                 </div>
               </div>
             </div>
