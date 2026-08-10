@@ -5,10 +5,18 @@ import {
   setPageCache,
   setAllPokemonNames,
   setTypeCache,
-  setGenerationCache
+  setGenerationCache,
+  setTypeRelationsCache
 } from './pokeState'
 import { setError, setLoading } from './UI'
-import { saveCache, saveNames, saveTypeCache, saveGenerationCache } from '../utils/cache'
+import {
+  saveCache,
+  saveNames,
+  saveTypeCache,
+  saveGenerationCache,
+  saveTypeRelationsCache,
+  isValidDefensiveRelations
+} from '../utils/cache'
 import { flattenChain, extractChainId } from '../utils/evolution'
 
 // TODO: dead code tras Fase 6, limpiar al final
@@ -37,6 +45,19 @@ export const fetchPokemonDataList = (page = 0) => {
 }
 
 const PERSIST_AFTER_MS = 500
+
+const inFlightTypeRelations = new Map()
+
+const extractDefensiveRelations = (data) => {
+  const relations = data?.damage_relations || {}
+  return {
+    double_damage_from: Array.isArray(relations.double_damage_from)
+      ? relations.double_damage_from
+      : [],
+    half_damage_from: Array.isArray(relations.half_damage_from) ? relations.half_damage_from : [],
+    no_damage_from: Array.isArray(relations.no_damage_from) ? relations.no_damage_from : []
+  }
+}
 
 const persistCache = (dispatch, cache, name, key, data) => {
   dispatch(setPokemonCache({ name, key, data }))
@@ -175,5 +196,39 @@ export const fetchEvolutionChain = (name) => {
       chainDetail,
       evolution: flattenChain(chainDetail?.chain, getState().pokeState.pokemonCache)
     }
+  }
+}
+
+// Defensive damage relations for a single type (/type/{name} -> damage_relations).
+// Cache-first in Redux and IndexedDB; concurrent callers share one in-flight promise.
+export const fetchTypeRelations = (typeName) => {
+  return async (dispatch, getState) => {
+    const normalizedType = typeof typeName === 'string' ? typeName.trim().toLowerCase() : ''
+    if (!normalizedType) {
+      throw new Error('Invalid type name')
+    }
+
+    const cached = getState().pokeState.typeRelationsCache[normalizedType]
+    if (cached && isValidDefensiveRelations(cached)) return cached
+
+    const inFlight = inFlightTypeRelations.get(normalizedType)
+    if (inFlight) return inFlight
+
+    const request = (async () => {
+      try {
+        const data = await api.type(normalizedType)
+        const relations = extractDefensiveRelations(data)
+        dispatch(setTypeRelationsCache({ type: normalizedType, data: relations }))
+
+        const refresh = () => saveTypeRelationsCache(getState().pokeState.typeRelationsCache)
+        setTimeout(refresh, PERSIST_AFTER_MS)
+        return relations
+      } finally {
+        inFlightTypeRelations.delete(normalizedType)
+      }
+    })()
+
+    inFlightTypeRelations.set(normalizedType, request)
+    return request
   }
 }

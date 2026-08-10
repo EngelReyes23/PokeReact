@@ -10,14 +10,16 @@ import {
   loadNames,
   loadTypeCache,
   loadGenerationCache,
-  loadFavorites
+  loadFavorites,
+  loadTypeRelationsCache
 } from './utils/cache'
 import {
   hydrateCache,
   setAllPokemonNames,
   hydrateTypeCache,
   hydrateGenerationCache,
-  hydrateFavorites
+  hydrateFavorites,
+  hydrateTypeRelationsCache
 } from './slices/pokeState'
 
 const bootstrap = async () => {
@@ -35,6 +37,11 @@ const bootstrap = async () => {
 
   const favorites = await loadFavorites()
   if (favorites.length) store.dispatch(hydrateFavorites(favorites))
+
+  const typeRelationsCache = await loadTypeRelationsCache()
+  if (Object.keys(typeRelationsCache).length) {
+    store.dispatch(hydrateTypeRelationsCache(typeRelationsCache))
+  }
 
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

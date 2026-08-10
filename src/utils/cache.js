@@ -5,6 +5,7 @@ const NAMES_CACHE_KEY = 'allPokemonNames'
 const TYPE_CACHE_KEY = 'typeCache'
 const GENERATION_CACHE_KEY = 'generationCache'
 const FAVORITES_KEY = 'favorites'
+const TYPE_RELATIONS_CACHE_KEY = 'typeRelationsCache'
 
 export const saveCache = async (cache) => {
   try {
@@ -88,5 +89,45 @@ export const loadFavorites = async () => {
   } catch (error) {
     console.warn('No se pudieron cargar los favoritos', error)
     return []
+  }
+}
+
+export const isValidDefensiveRelations = (entry) => {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false
+  return (
+    Array.isArray(entry.double_damage_from) &&
+    Array.isArray(entry.half_damage_from) &&
+    Array.isArray(entry.no_damage_from)
+  )
+}
+
+const sanitizeTypeRelationsCache = (data) => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return {}
+
+  const sanitized = {}
+  for (const key of Object.keys(data)) {
+    const normalizedKey = typeof key === 'string' ? key.trim().toLowerCase() : ''
+    if (!normalizedKey) continue
+    if (!isValidDefensiveRelations(data[key])) continue
+    sanitized[normalizedKey] = data[key]
+  }
+  return sanitized
+}
+
+export const saveTypeRelationsCache = async (cache) => {
+  try {
+    await set(TYPE_RELATIONS_CACHE_KEY, cache)
+  } catch (error) {
+    console.warn('No se pudo persistir la caché de relaciones de tipo', error)
+  }
+}
+
+export const loadTypeRelationsCache = async () => {
+  try {
+    const data = await get(TYPE_RELATIONS_CACHE_KEY)
+    return sanitizeTypeRelationsCache(data)
+  } catch (error) {
+    console.warn('No se pudo cargar la caché de relaciones de tipo', error)
+    return {}
   }
 }
