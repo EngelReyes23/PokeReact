@@ -54,17 +54,47 @@
 - `useAdjacentPokemon` derives prev/next from the filtered list in Redux (populated by Home). On a direct URL visit with filter params where Home never mounted, it gracefully falls back to absolute dex order, ignoring URL filter params — accepted, deferred to Step 4 polish.
 - Sprite `<img>` lazy + async; AbortController cancels in-flight card fetches on unmount.
 
+## PokemonDetail tabs & appearance
+
+- **URL-driven tabs**: `PokemonDetail` has four tabs — `overview`, `stats`, `evolution`, `moves` — stored in the `tab` query parameter (`DetailTabs.jsx`).
+- A missing or invalid `tab` value renders Overview.
+- Changing tabs preserves every other URL parameter; explicit tab clicks use normal browser history, so Back/Forward works.
+- Tabs intentionally do **NOT** implement custom ArrowLeft/ArrowRight navigation. Every tab button is reachable through the normal Tab key and uses native Enter/Space button activation.
+- The global Pokémon previous/next keyboard listener ignores focus inside the `[role="tablist"]`.
+- **Normal/Shiny selector**: `PokemonAppearanceToggle.jsx` renders a persistent segmented control in the hero. Appearance is local state in `PokemonDetail` — **not** stored in Redux or IndexedDB.
+- **Sprite resolution** lives in `src/utils/sprites.js`.
+  - Normal fallback order: `official-artwork.front_default` → `home.front_default` → `front_default` → application fallback.
+  - Shiny fallback order: `official-artwork.front_shiny` → `home.front_shiny` → `front_shiny` → resolved normal sprite.
+- Shiny stays selected when changing tabs or navigating to another Pokémon that has a valid shiny sprite. It falls back to Normal only after a successfully loaded target Pokémon has no available shiny source.
+
+## Panel architecture (`PokemonDetail`)
+
+- `DetailTabs.jsx`: tab shell + URL interaction.
+- `PokemonAppearanceToggle.jsx`: Normal/Shiny segmented control.
+- `PokemonDetailPanels.jsx`: panel presentation (Overview, Stats, Evolution & Forms, Moves).
+- `PokemonDetail.jsx`: routing, loading orchestration, hero, navigation, appearance, and theme.
+
+Panel contents:
+
+- **Overview**: Pokédex Entry, flavor text, height, weight, abilities.
+- **Stats**: existing `StatBlock`.
+- **Evolution & Forms**: existing `EvolutionTree` + future "Mega & Special Forms" placeholder.
+- **Moves**: future Moves placeholder.
+
+Base Pokémon loading and evolution loading are independent. An evolution-fetch failure affects only the Evolution & Forms panel and does not block the hero, Overview, Stats, tabs, Normal/Shiny, or navigation. No Forms or Moves fetching exists yet.
+
 ## Component & hook inventory
 
-- Components: `Card` (primitive, `as` + forwardRef), `ContentPage`, `ErrorBoundary`, `FavoriteButton`, `FilterBar`, `Footer`, `Header`, `Badge`, `IconType`, `Layout`, `PaginationComponent`, `PokemonCard`, `PokemonCardSkeleton`, `PokemonList`, `PokemonModal`, `Spinner`, `StatBlock`, `Toggle`.
+- Components: `Card` (primitive, `as` + forwardRef), `ContentPage`, `DetailTabs`, `ErrorBoundary`, `FavoriteButton`, `FilterBar`, `Footer`, `Header`, `Badge`, `IconType`, `Layout`, `PaginationComponent`, `PokemonAppearanceToggle`, `PokemonCard`, `PokemonCardSkeleton`, `PokemonDetailPanels`, `PokemonList`, `PokemonModal`, `Spinner`, `StatBlock`, `Toggle`.
 - Hooks: `useAdjacentPokemon`, `useData`, `useFilteredList` (filter -> sort -> paginate pipeline), `usePagination` (reads/writes `?page=N`, merges with other params), `usePokemonList`.
-- Pages: `Home.jsx`, `PokemonDetail.jsx`. Helpers: `utils/api.js`, `utils/evolution.js`, `utils/cache.js`. Constants: `constants/types.js` (type color map), `constants/pokemon.js` (`MAX_POKEMON_ID`).
+- Pages: `Home.jsx`, `PokemonDetail.jsx`. Helpers: `utils/api.js`, `utils/evolution.js`, `utils/sprites.js`, `utils/cache.js`. Constants: `constants/types.js` (type color map), `constants/pokemon.js` (`MAX_POKEMON_ID`).
 
 ## Branches (do NOT reimplement existing work)
 
 - `master` — stable baseline (remote default).
 - `feature/pokemon-modal` — Phases 1-6 lived here (modal FLIP, "Ver más detalles", evolution chain, search, page cache, filters).
-- `feature/detail-fullview` — **current working branch** (descends from design-system + pokemon-modal). Redesigns `PokemonDetail` as a full dashboard.
+- `feature/detail-fullview` — descended from design-system + pokemon-modal. Redesigned `PokemonDetail` as a full themed dashboard.
+- `feature/detail-tabs-shiny` — **current working branch**. Adds URL-driven tabs and the Normal/Shiny appearance selector to `PokemonDetail`.
 - Other branches (reference only): `feature/detail-modal` (modal overlay), `feature/detail-state` (conditional full-screen via state), `feature/detail-router` (real routing), `feature/cache-persistence`, `feature/design-system`, `feature/expandable-card`, `modernizacion`.
 
 ## Design system (applied, in master)
@@ -86,10 +116,15 @@
 - [x] **Phase 6 — Filters**: `useFilteredList` hook = pipeline filter (search ∩ type intersection ∩ generation) -> sort (id/name/total-stats) -> paginate client-side over the full subset (20/page). `FilterBar.jsx`: type chips (multi, IconType + aria-pressed), generation chips (1-9), sort select, results counter, "Limpiar filtros". `typeCache` + `generationCache` in pokeState, thunks `fetchTypeList`/`fetchGenerationList` (cache-first), persisted in IndexedDB + hydrated. `usePagination` reads/writes `?page=N` and merges with other params. Sort by stat only uses already-cached pokemon (uncached go last, no mass fetches). Modal "Ver más detalles" and Detail "Volver" preserve the full query string. Commit 0e2f8a4.
 - [x] **Favorites (persisted)**: `favorites: string[]` in pokeState with `toggleFavorite`, persisted in IndexedDB + hydrated (`loadFavorites`/`hydrateFavorites` in main.jsx). `FavoriteButton.jsx` on PokemonCard and inside PokemonModal (stopPropagation on click/keydown so it never opens the modal; filled/outline; aria-pressed, focusable). "Solo favoritos" chip in FilterBar, combines with search/filters, reflected in URL (`?fav=1`). Commit bdfe276.
 - [x] **Design system**: tokens, Card primitive, unified brand-500 accent, AA badges, shared StatBlock. Commits 9ee32bd..d321599, recorded in docs 5fd421c.
+- [x] **Detail tabs + Normal/Shiny (Fase 1)** (`feature/detail-tabs-shiny`): URL-driven `DetailTabs` (overview/stats/evolution/moves), accessible tab buttons with native activation, global arrow-listener ignores the tablist, persistent `PokemonAppearanceToggle`, `src/utils/sprites.js` resolver, content redistributed into `PokemonDetailPanels`, and independent evolution loading/error. Commits e18b1a1, ed587aa, db01340.
 
-## Project state (as of commit 96eeaef, branch `feature/detail-fullview`)
+## Project state (as of commit db01340, branch `feature/detail-tabs-shiny`)
 
-Redesigning `PokemonDetail` as a full dashboard view. Completed so far on this branch:
+Phase 1 of the tabs/shiny work is complete and committed on this branch. The detail page now
+has URL-driven tabs and a persistent Normal/Shiny hero selector (see "PokemonDetail tabs &
+appearance" and "Panel architecture" above).
+
+Dashboard history on the preceding `feature/detail-fullview` branch (reference):
 
 - **Dashboard skeleton** (b4f0641): hero + responsive 3-column grid (Pokédex Entry, Stats 2x3 via `StatBlock layout="grid"`, Línea evolutiva) reusing `Card` + `StatBlock`. `Layout` uses `main flex min-h-screen` + `flex-1` content.
 - **Balanced hero** (c48af65): sprite as protagonist, display name, type-based gradient, sticky footer.
@@ -97,12 +132,17 @@ Redesigning `PokemonDetail` as a full dashboard view. Completed so far on this b
 - **Hero radial halo** (c8dc3a5): symmetric radial background behind the sprite.
 - **Prev/next navigation** (96eeaef): in the hero via `useAdjacentPokemon` — index relative to the filtered list, with fallback to absolute dex id when the filtered list is empty.
 
-Pending on `feature/detail-fullview`:
+Pending on `feature/detail-fullview` (now superseded by the tabs/shiny redesign):
 
 - **B3 — keyboard + a11y**: keyboard activation for prev/next, aria-expanded/aria-label, visible focus rings.
 - **Step 2 — vertical evolution line with branch support**: evolution chain rendered vertically, handling branching (e.g. Eevee) — currently horizontal.
 - **Step 3 — fit-on-screen polish**: ensure the dashboard fits without excessive scroll on common viewports.
 - **Step 4 — app-wide polish**: persist theme (`Toggle.jsx`), honor URL filter params on direct detail visits (currently `useAdjacentPokemon` ignores them), misc cleanup.
+
+## Next planned phase
+
+**Phase 2 — Expanded Overview.** Planned content: Category, Base Catch Rate, Habitat, Egg Groups,
+regular and hidden abilities, and calculated Type Matchups (weaknesses, resistances, immunities).
 
 ## Remaining ideas (deferred)
 
