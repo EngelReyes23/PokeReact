@@ -21,7 +21,23 @@ const Abilities = ({ abilities }) => (
   </div>
 )
 
-export const PokemonOverviewPanel = ({ flavorText, height, weight, abilities, pokemonTypes }) => {
+export const PokemonOverviewPanel = ({
+  flavorText,
+  height,
+  weight,
+  abilities,
+  pokemonTypes,
+  category,
+  captureRate,
+  habitat,
+  eggGroups,
+  regularAbilities,
+  hiddenAbilities,
+  typeMatchups,
+  typeMatchupsStatus,
+  typeMatchupsError,
+  onRetryTypeMatchups
+}) => {
   const hasPhysicalData = height != null && weight != null
   const hasAnyContent = flavorText || hasPhysicalData || abilities?.length > 0
 

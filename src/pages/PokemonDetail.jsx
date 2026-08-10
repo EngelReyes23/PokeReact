@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from '../components/Badge'
@@ -14,22 +14,25 @@ import {
 } from '../components/PokemonDetailPanels'
 import { Spinner } from '../components/Spinner'
 import { useAdjacentPokemon } from '../Hooks/useAdjacentPokemon'
-import { fetchPokemonDetail, fetchEvolutionChain } from '../slices/thunks'
+import { fetchPokemonDetail, fetchEvolutionChain, fetchTypeRelations } from '../slices/thunks'
 import { buildEvolutionTree } from '../utils/evolution'
 import { hasShinySprite, resolvePokemonSprite } from '../utils/sprites'
 import { TYPES } from '../constants/types'
 import { typeTheme } from '../utils/gradient'
 import { DetailThemeContext } from '../contexts/detailTheme'
+import {
+  getEnglishFlavorText,
+  getPokemonCategory,
+  formatCatchRate,
+  formatEggGroups,
+  splitAbilities
+} from '../utils/pokemonDetails'
+import { calculateTypeMatchups } from '../utils/typeMatchups'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
 
 const padId = (id) => `#${String(id).padStart(3, '0')}`
-
-const getSpanishFlavor = (species) => {
-  const entry = species?.flavor_text_entries?.find((e) => e.language?.name === 'es')
-  return entry?.flavor_text?.replace(/[\f\n]/g, ' ').trim()
-}
 
 const ChevronLeft = () => (
   <svg
@@ -79,14 +82,181 @@ export const PokemonDetail = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isEvolutionLoading, setIsEvolutionLoading] = useState(true)
   const [appearance, setAppearance] = useState('normal')
+  const [typeMatchups, setTypeMatchups] = useState(null)
+  const [typeMatchupsStatus, setTypeMatchupsStatus] = useState('idle')
+  const [typeMatchupsError, setTypeMatchupsError] = useState(null)
 
   const pokemonCache = useSelector((state) => state.pokeState.pokemonCache)
   const setDetailTheme = useContext(DetailThemeContext)
+
+  // Request sequence for Type Matchups stale-protection
+  const typeMatchupsSequenceRef = useRef(0)
+
+  // Normalize route name once for all route-safe comparisons
+  const normalizedRouteName = useMemo(() => {
+    return typeof name === 'string' ? name.trim().toLowerCase() : ''
+  }, [name])
+
+  // Check if current pokemon belongs to the current route
+  const isCurrentPokemon = useMemo(() => {
+    if (!pokemon || !normalizedRouteName) return false
+    if (typeof pokemon.name !== 'string') return false
+    return pokemon.name.trim().toLowerCase() === normalizedRouteName
+  }, [pokemon, normalizedRouteName])
+
+  // Derive stable defensive type identity from pokemon.types (only when pokemon matches route)
+  const defensiveTypeKey = useMemo(() => {
+    if (!isCurrentPokemon || !pokemon?.types) return null
+    const types = pokemon.types
+      .map((t) => t.type.name)
+      .filter((typeName) => typeof typeName === 'string' && typeName.trim().length > 0)
+      .map((typeName) => typeName.trim().toLowerCase())
+    return types.length > 0 ? types.join('|') : null
+  }, [isCurrentPokemon, pokemon])
+
+  // Effective Species: route-safe local species or fallback to cache for current route name
+  const effectiveSpecies = useMemo(() => {
+    if (!normalizedRouteName) return null
+    // Local species only if it belongs to current route
+    if (species && typeof species.name === 'string') {
+      if (species.name.trim().toLowerCase() === normalizedRouteName) return species
+    }
+    // Fallback to cache for current route only
+    const cached = pokemonCache[normalizedRouteName]?.species
+    if (cached && typeof cached.name === 'string') {
+      if (cached.name.trim().toLowerCase() === normalizedRouteName) return cached
+    }
+    return null
+  }, [species, normalizedRouteName, pokemonCache])
 
   const evolutionTree = useMemo(
     () => buildEvolutionTree(chainDetail?.chain, pokemonCache),
     [chainDetail, pokemonCache]
   )
+
+  // Shared Type Matchups load function (stable callback)
+  const loadTypeMatchups = useCallback(
+    async (types, sequenceId) => {
+      // Check ownership BEFORE clearing state
+      if (typeMatchupsSequenceRef.current !== sequenceId) return
+
+      // Clear stale state
+      setTypeMatchups(null)
+      setTypeMatchupsError(null)
+      setTypeMatchupsStatus('loading')
+
+      try {
+        const results = await Promise.allSettled(
+          types.map((type) => dispatch(fetchTypeRelations(type)))
+        )
+
+        // Check if this is still the current sequence
+        if (typeMatchupsSequenceRef.current !== sequenceId) return
+
+        const allSucceeded = results.every((result) => result.status === 'fulfilled')
+
+        if (!allSucceeded) {
+          const failedTypes = types.filter((_, index) => results[index].status === 'rejected')
+          setTypeMatchupsError(
+            new Error(`Failed to load type relations for: ${failedTypes.join(', ')}`)
+          )
+          setTypeMatchupsStatus('error')
+          setTypeMatchups(null)
+          return
+        }
+
+        const relations = {}
+        types.forEach((type, index) => {
+          relations[type] = results[index].value
+        })
+
+        const result = calculateTypeMatchups({ defensiveTypes: types, relationsByType: relations })
+        if (result.complete) {
+          setTypeMatchups(result.matchups)
+          setTypeMatchupsStatus('success')
+        } else {
+          setTypeMatchupsError(
+            new Error(`Incomplete type relations: ${result.missingDefensiveTypes.join(', ')}`)
+          )
+          setTypeMatchupsStatus('error')
+          setTypeMatchups(null)
+        }
+      } catch (error) {
+        if (typeMatchupsSequenceRef.current !== sequenceId) return
+        setTypeMatchupsError(error)
+        setTypeMatchupsStatus('error')
+        setTypeMatchups(null)
+      }
+    },
+    [dispatch]
+  )
+
+  // Automatic Type Matchups loading
+  useEffect(() => {
+    if (!defensiveTypeKey || !normalizedRouteName) {
+      typeMatchupsSequenceRef.current += 1 // Invalidate
+      setTypeMatchups(null)
+      setTypeMatchupsError(null)
+      setTypeMatchupsStatus('idle')
+      return
+    }
+
+    const types = defensiveTypeKey.split('|')
+    const sequenceId = ++typeMatchupsSequenceRef.current
+
+    loadTypeMatchups(types, sequenceId)
+  }, [defensiveTypeKey, normalizedRouteName, loadTypeMatchups])
+
+  // Explicit unmount invalidation for Type Matchups
+  useEffect(() => {
+    return () => {
+      typeMatchupsSequenceRef.current += 1
+    }
+  }, [])
+
+  // Retry callback (stable)
+  const retryTypeMatchups = useCallback(async () => {
+    if (!defensiveTypeKey) return
+
+    const types = defensiveTypeKey.split('|')
+    const sequenceId = ++typeMatchupsSequenceRef.current
+
+    loadTypeMatchups(types, sequenceId)
+  }, [defensiveTypeKey, loadTypeMatchups])
+
+  // Prepare data for Expanded Overview (route-safe)
+  const overviewData = useMemo(() => {
+    if (!isCurrentPokemon || !pokemon) return null
+
+    const flavorText = effectiveSpecies ? getEnglishFlavorText(effectiveSpecies) : null
+    const category = effectiveSpecies ? getPokemonCategory(effectiveSpecies) : null
+    const captureRate = effectiveSpecies ? formatCatchRate(effectiveSpecies.capture_rate) : null
+    const eggGroups = effectiveSpecies ? formatEggGroups(effectiveSpecies.egg_groups) : []
+    const { regular: regularAbilities, hidden: hiddenAbilities } = splitAbilities(pokemon.abilities)
+
+    return {
+      flavorText,
+      category,
+      height: pokemon.height,
+      weight: pokemon.weight,
+      captureRate,
+      habitat: effectiveSpecies?.habitat?.name || null,
+      eggGroups,
+      regularAbilities,
+      hiddenAbilities,
+      pokemonTypes: pokemon.types.map((t) => t.type.name),
+      typeMatchups,
+      typeMatchupsStatus,
+      typeMatchupsError
+    }
+  }, [
+    isCurrentPokemon,
+    pokemon,
+    effectiveSpecies,
+    typeMatchups,
+    typeMatchupsStatus,
+    typeMatchupsError
+  ])
 
   const {
     prevName,
@@ -224,18 +394,27 @@ export const PokemonDetail = () => {
   const hasShiny = hasShinySprite(pokemon.sprites)
   const mainType = types[0]?.type?.name
   const typeColor = TYPES[mainType]?.color || TYPES.bug.color
-  const flavorText = getSpanishFlavor(species)
 
   const renderPanel = (tabId) => {
     switch (tabId) {
       case 'overview':
         return (
           <PokemonOverviewPanel
-            flavorText={flavorText}
-            height={pokemon.height}
-            weight={pokemon.weight}
+            flavorText={overviewData?.flavorText}
+            height={overviewData?.height}
+            weight={overviewData?.weight}
             abilities={abilities}
             pokemonTypes={pokemonTypes}
+            category={overviewData?.category}
+            captureRate={overviewData?.captureRate}
+            habitat={overviewData?.habitat}
+            eggGroups={overviewData?.eggGroups}
+            regularAbilities={overviewData?.regularAbilities}
+            hiddenAbilities={overviewData?.hiddenAbilities}
+            typeMatchups={overviewData?.typeMatchups}
+            typeMatchupsStatus={overviewData?.typeMatchupsStatus}
+            typeMatchupsError={overviewData?.typeMatchupsError}
+            onRetryTypeMatchups={retryTypeMatchups}
           />
         )
       case 'stats':
