@@ -1,13 +1,14 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useAnimate, usePresence } from 'framer-motion'
-import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link, useLocation } from 'react-router-dom'
+import { TYPES } from '../constants/types'
+import { setActivePokemon, setOpenPokemonId, setPokemonSourceRect } from '../slices/pokeState'
+import { typeGradient } from '../utils/gradient'
 import { Badge } from './Badge'
 import { Card } from './Card'
 import { FavoriteButton } from './FavoriteButton'
 import { StatBlock } from './StatBlock'
-import { setOpenPokemonId, setActivePokemon, setPokemonSourceRect } from '../slices/pokeState'
-import { TYPES } from '../constants/types'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
@@ -135,7 +136,7 @@ export const PokemonModal = () => {
         role='dialog'
         aria-modal='true'
         aria-label={`Detalles de ${name}`}
-        className='fixed inset-0 z-50 m-auto h-fit max-h-[90vh] w-full max-w-md overflow-y-auto p-6 shadow-lg'
+        className='fixed inset-0 z-50 isolate m-auto h-fit max-h-[90vh] w-full max-w-md flex-col overflow-hidden shadow-lg'
       >
         <button
           type='button'
@@ -155,7 +156,13 @@ export const PokemonModal = () => {
           </svg>
         </button>
 
-        <div className='flex flex-col items-center gap-4 text-gray-900 dark:text-gray-100'>
+        <div
+          aria-hidden='true'
+          className='pointer-events-none absolute inset-0 -z-10'
+          style={typeGradient(pokemonTypes, '40')}
+        />
+
+        <div className='flex flex-col items-center gap-5 px-6 pb-12 pt-12 text-gray-900 dark:text-gray-100'>
           <span
             className='shrink-0 rounded-full bg-[var(--modal-tint)] dark:bg-[var(--modal-tint-dark)]'
             style={{
@@ -176,7 +183,9 @@ export const PokemonModal = () => {
               <Badge key={type} type={type} {...TYPES[type]} />
             ))}
           </div>
+        </div>
 
+        <div className='flex min-h-0 flex-col gap-4 overflow-y-auto p-6 pt-4'>
           <div className='grid w-full grid-cols-2 gap-x-4 gap-y-1 text-sm'>
             <span className='text-label capitalize text-muted'>Altura</span>
             <span className='text-right font-semibold'>

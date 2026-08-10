@@ -23,9 +23,18 @@ const urlList = [
   }
 ]
 
-export const Footer = () => {
+export const Footer = ({ surfaceStyle = null }) => {
   return (
-    <footer className='w-full select-none bg-gray-200 p-3 text-center transition-colors duration-500 dark:bg-gray-800'>
+    <footer className='relative isolate w-full select-none bg-gray-200 p-3 text-center transition-colors duration-500 dark:bg-gray-800'>
+      {surfaceStyle
+        ? (
+          <div
+            aria-hidden='true'
+            className='pointer-events-none absolute inset-0 -z-10'
+            style={surfaceStyle}
+          />
+          )
+        : null}
       <div className='flex items-center justify-center gap-5 p-1'>
         {urlList.map((url) => (
           <a

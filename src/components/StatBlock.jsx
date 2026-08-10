@@ -28,8 +28,8 @@ const StatRow = ({ label, value }) => (
   </div>
 )
 
-const StatCell = ({ label, value }) => (
-  <Card className='flex flex-col gap-1 p-3'>
+const StatCell = ({ label, value, tint }) => (
+  <Card className='flex flex-col gap-1 p-3' tint={tint}>
     <span className='text-caption uppercase tracking-wide text-muted'>{label}</span>
     <div className='flex items-center gap-2'>
       <span className='w-10 shrink-0 text-h2 text-gray-900 dark:text-gray-100'>{value}</span>
@@ -39,7 +39,7 @@ const StatCell = ({ label, value }) => (
 )
 
 // Shared stats block: `list` for the modal, `grid` (2x3) for the detail dashboard.
-export const StatBlock = ({ stats, layout = 'list' }) => {
+export const StatBlock = ({ stats, layout = 'list', tint }) => {
   const items = (stats || []).map((stat) => ({
     key: stat.stat.name,
     label: STAT_LABELS[stat.stat.name] || stat.stat.name,
@@ -53,7 +53,7 @@ export const StatBlock = ({ stats, layout = 'list' }) => {
         ? (
           <div className='grid grid-cols-2 gap-2'>
             {items.map(({ key, label, value }) => (
-              <StatCell key={key} label={label} value={value} />
+              <StatCell key={key} label={label} value={value} tint={tint} />
             ))}
           </div>
           )

@@ -11,23 +11,10 @@ import {
 } from '../slices/pokeState'
 import { fetchPokemonDetail } from '../slices/thunks'
 import { TYPES } from '../constants/types'
+import { typeGradient } from '../utils/gradient'
 
 const imageNotFound =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
-
-const styles = (pokemonTypes, alpha) => {
-  let background = ''
-
-  if (pokemonTypes.length > 1) {
-    background = `linear-gradient(0deg, ${pokemonTypes
-      .map((type) => TYPES[type].color + alpha)
-      .join(', ')})`
-  } else background = TYPES[pokemonTypes[0]].color + alpha
-
-  return {
-    background
-  }
-}
 
 const imageFrom = (sprites) =>
   sprites.other['official-artwork'].front_default ||
@@ -84,7 +71,7 @@ export const PokemonCard = ({ pokemon }) => {
       }}
       role='button'
       tabIndex={0}
-      style={styles(pokemonTypes, '26')}
+      style={typeGradient(pokemonTypes, '26')}
       className='animate__animated animate__fadeIn group relative flex max-h-full min-h-[250px] w-[250px] cursor-pointer select-none flex-col items-center justify-center gap-2 p-4 transition-transform hover:scale-110 hover:shadow-lg'
     >
       <FavoriteButton
@@ -94,7 +81,7 @@ export const PokemonCard = ({ pokemon }) => {
 
       <div
         className='min-h-[150px] w-1/2 min-w-[150px] rounded-full'
-        style={styles(pokemonTypes, '50')}
+        style={typeGradient(pokemonTypes, '50')}
       >
         <img
           alt={name}
