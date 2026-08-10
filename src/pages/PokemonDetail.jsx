@@ -4,11 +4,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Badge } from '../components/Badge'
 import { Card } from '../components/Card'
 import { DetailTabs } from '../components/DetailTabs'
-import { EvolutionTree } from '../components/EvolutionTree'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { PokemonAppearanceToggle } from '../components/PokemonAppearanceToggle'
+import {
+  PokemonEvolutionPanel,
+  PokemonMovesPanel,
+  PokemonOverviewPanel,
+  PokemonStatsPanel
+} from '../components/PokemonDetailPanels'
 import { Spinner } from '../components/Spinner'
-import { StatBlock } from '../components/StatBlock'
 import { useAdjacentPokemon } from '../Hooks/useAdjacentPokemon'
 import { fetchPokemonDetail, fetchEvolutionChain } from '../slices/thunks'
 import { buildEvolutionTree } from '../utils/evolution'
@@ -62,23 +66,6 @@ const BackButton = ({ search }) => (
   </Link>
 )
 
-const Abilities = ({ abilities }) => (
-  <div>
-    <h4 className='text-label text-muted'>Habilidades</h4>
-    <ul className='mt-1.5 flex flex-wrap gap-1.5'>
-      {abilities.map(({ ability, is_hidden: isHidden }) => (
-        <li
-          key={ability.name}
-          className='rounded-full bg-brand-100 px-3 py-1 text-sm capitalize dark:bg-brand-700/40'
-        >
-          {ability.name}
-          {isHidden && <span className='text-xs text-muted'> (oculta)</span>}
-        </li>
-      ))}
-    </ul>
-  </div>
-)
-
 export const PokemonDetail = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -88,7 +75,9 @@ export const PokemonDetail = () => {
   const [species, setSpecies] = useState(null)
   const [chainDetail, setChainDetail] = useState(null)
   const [error, setError] = useState(null)
+  const [evolutionError, setEvolutionError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isEvolutionLoading, setIsEvolutionLoading] = useState(true)
   const [appearance, setAppearance] = useState('normal')
 
   const pokemonCache = useSelector((state) => state.pokeState.pokemonCache)
@@ -112,24 +101,39 @@ export const PokemonDetail = () => {
 
     const load = async () => {
       setIsLoading(true)
+      setIsEvolutionLoading(true)
       setError(null)
+      setEvolutionError(null)
       setPokemon(null)
       setSpecies(null)
+      setChainDetail(null)
 
-      try {
-        const p = await Promise.all([
-          dispatch(fetchPokemonDetail(name)),
-          dispatch(fetchEvolutionChain(name))
-        ])
-        if (!active) return
-        setPokemon(p[0])
-        setSpecies(p[1].species)
-        setChainDetail(p[1].chainDetail)
-      } catch (err) {
-        if (active) setError(err)
-      } finally {
-        if (active) setIsLoading(false)
-      }
+      const pokemonPromise = dispatch(fetchPokemonDetail(name))
+        .then((result) => {
+          if (active) setPokemon(result)
+        })
+        .catch((err) => {
+          if (active) setError(err)
+        })
+        .finally(() => {
+          if (active) setIsLoading(false)
+        })
+
+      const evolutionPromise = dispatch(fetchEvolutionChain(name))
+        .then((result) => {
+          if (active) {
+            setSpecies(result.species)
+            setChainDetail(result.chainDetail)
+          }
+        })
+        .catch((err) => {
+          if (active) setEvolutionError(err)
+        })
+        .finally(() => {
+          if (active) setIsEvolutionLoading(false)
+        })
+
+      await Promise.allSettled([pokemonPromise, evolutionPromise])
     }
 
     load()
@@ -223,65 +227,36 @@ export const PokemonDetail = () => {
   const flavorText = getSpanishFlavor(species)
 
   const renderPanel = (tabId) => {
-    if (tabId === 'overview') {
-      return (
-        <div className='grid grid-cols-1 gap-4 lg:items-start lg:grid-cols-[1fr_1.2fr_0.9fr] lg:gap-5'>
-          <Card className='flex flex-col gap-4 p-5' tint={typeTheme.contentSurface(pokemonTypes)}>
-            <h3 className='text-caption uppercase tracking-wide text-muted'>Pokédex Entry</h3>
-            {flavorText && (
-              <p className='text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
-                "{flavorText}"
-              </p>
-            )}
-
-            <div className='grid grid-cols-2 gap-3'>
-              <div>
-                <p className='text-label text-muted'>Altura</p>
-                <p className='text-xl font-bold'>{pokemon.height / 10} m</p>
-              </div>
-              <div>
-                <p className='text-label text-muted'>Peso</p>
-                <p className='text-xl font-bold'>{pokemon.weight / 10} kg</p>
-              </div>
-            </div>
-
-            {abilities?.length > 0 && <Abilities abilities={abilities} />}
-          </Card>
-
-          <div>
-            <StatBlock stats={stats} layout='grid' tint={typeTheme.contentSurface(pokemonTypes)} />
-          </div>
-
-          <div className='flex flex-col'>
-            <h3 className='mb-3 text-caption uppercase tracking-wide text-muted'>
-              Línea evolutiva
-            </h3>
-            <Card
-              className='p-4 lg:max-h-[16rem] lg:overflow-y-auto'
-              tint={typeTheme.contentSurface(pokemonTypes)}
-            >
-              <EvolutionTree
-                tree={evolutionTree}
-                currentName={name}
-                search={search}
-                typeColor={typeColor}
-              />
-            </Card>
-          </div>
-        </div>
-      )
+    switch (tabId) {
+      case 'overview':
+        return (
+          <PokemonOverviewPanel
+            flavorText={flavorText}
+            height={pokemon.height}
+            weight={pokemon.weight}
+            abilities={abilities}
+            pokemonTypes={pokemonTypes}
+          />
+        )
+      case 'stats':
+        return <PokemonStatsPanel stats={stats} pokemonTypes={pokemonTypes} />
+      case 'evolution':
+        return (
+          <PokemonEvolutionPanel
+            evolutionTree={evolutionTree}
+            evolutionError={evolutionError}
+            isEvolutionLoading={isEvolutionLoading}
+            currentName={name}
+            search={search}
+            typeColor={typeColor}
+            pokemonTypes={pokemonTypes}
+          />
+        )
+      case 'moves':
+        return <PokemonMovesPanel />
+      default:
+        return null
     }
-
-    const labels = {
-      stats: 'Stats',
-      evolution: 'Evolution & Forms',
-      moves: 'Moves'
-    }
-    return (
-      <Card className='flex min-h-[12rem] items-center justify-center p-8'>
-        <p className='text-sm text-muted'>{labels[tabId] || tabId} — content coming soon</p>
-      </Card>
-    )
   }
 
   return (
