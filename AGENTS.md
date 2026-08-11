@@ -44,12 +44,12 @@
 - react-router-dom **v7**, nested routes: `/` -> `Layout` (Header + `<Outlet/>` + Footer) per `App.jsx`; `/pokemon/:name` -> `pages/PokemonDetail.jsx`.
 - framer-motion (modal FLIP animation `PokemonCard` <-> `PokemonModal`).
 - Pagination via `react-headless-pagination` (`PaginationComponent.jsx`).
-- Persistence: IndexedDB via idb-keyval (`utils/cache.js`), hydrated in `main.jsx` **before render** (cache, names, typeCache, generationCache, favorites).
+- Persistence: IndexedDB via idb-keyval (`utils/cache.js`), hydrated in `main.jsx` **before render** (cache, names, typeCache, generationCache, favorites, typeRelationsCache).
 
 ## Architecture — what an agent would miss
 
 - **URL is the single source of truth** for filters: `?search=&type=fire,flying&gen=1&sort=id&page=N&fav=1`. Home hydrates Redux from URL params on mount/change via `useFilteredList`.
-- Retrieval cache hierarchy: `pokemonCache` (per-pokemon detail) + `pageCache` (page results) + `allPokemonNames`, `typeCache`, `generationCache`, `favorites` — all cache-first; thunks skip fetch when cached. Per-card fetches skip when `pokemonCache` already has the detail; sprite `<img>` uses `loading="lazy"` + `decoding="async"`.
+- Retrieval cache hierarchy: `pokemonCache` (per-pokemon detail) + `pageCache` (page results) + `allPokemonNames`, `typeCache`, `generationCache`, `favorites`, `typeRelationsCache` (defensive type relations) — all cache-first; thunks skip fetch when cached. Per-card fetches skip when `pokemonCache` already has the detail; sprite `<img>` uses `loading="lazy"` + `decoding="async"`.
 - **Dead code TODO**: `slices/thunks.js:14` — `fetchPokemonDataList` is marked "dead code tras Fase 6, limpiar al final". Do not rely on it; clean up only at the final polish step.
 - `useAdjacentPokemon` derives prev/next from the filtered list in Redux (populated by Home). On a direct URL visit with filter params where Home never mounted, it gracefully falls back to absolute dex order, ignoring URL filter params — accepted, deferred to Step 4 polish.
 - Sprite `<img>` lazy + async; AbortController cancels in-flight card fetches on unmount.
@@ -76,7 +76,7 @@
 
 Panel contents:
 
-- **Overview**: Pokédex Entry, flavor text, height, weight, abilities.
+- **Overview**: English Pokédex Entry, Category, Height, Weight, Base Catch Rate, Habitat, Egg Groups, Regular/Hidden Abilities, and defensive Type Matchups. See "Phase 2 — Expanded Overview".
 - **Stats**: existing `StatBlock`.
 - **Evolution & Forms**: existing `EvolutionTree` + future "Mega & Special Forms" placeholder.
 - **Moves**: future Moves placeholder.
@@ -85,16 +85,17 @@ Base Pokémon loading and evolution loading are independent. An evolution-fetch 
 
 ## Component & hook inventory
 
-- Components: `Card` (primitive, `as` + forwardRef), `ContentPage`, `DetailTabs`, `ErrorBoundary`, `FavoriteButton`, `FilterBar`, `Footer`, `Header`, `Badge`, `IconType`, `Layout`, `PaginationComponent`, `PokemonAppearanceToggle`, `PokemonCard`, `PokemonCardSkeleton`, `PokemonDetailPanels`, `PokemonList`, `PokemonModal`, `Spinner`, `StatBlock`, `Toggle`.
+- Components: `Card` (primitive, `as` + forwardRef), `ContentPage`, `DetailTabs`, `ErrorBoundary`, `FavoriteButton`, `FilterBar`, `Footer`, `Header`, `Badge`, `IconType`, `Layout`, `PaginationComponent`, `PokemonAppearanceToggle`, `PokemonCard`, `PokemonCardSkeleton`, `PokemonDetailPanels`, `PokemonList`, `PokemonModal`, `Spinner`, `StatBlock`, `Toggle`, `TypeMatchups`.
 - Hooks: `useAdjacentPokemon`, `useData`, `useFilteredList` (filter -> sort -> paginate pipeline), `usePagination` (reads/writes `?page=N`, merges with other params), `usePokemonList`.
-- Pages: `Home.jsx`, `PokemonDetail.jsx`. Helpers: `utils/api.js`, `utils/evolution.js`, `utils/sprites.js`, `utils/cache.js`. Constants: `constants/types.js` (type color map), `constants/pokemon.js` (`MAX_POKEMON_ID`).
+- Pages: `Home.jsx`, `PokemonDetail.jsx`. Helpers: `utils/api.js`, `utils/evolution.js`, `utils/sprites.js`, `utils/cache.js`, `utils/pokemonDetails.js`, `utils/typeMatchups.js`. Constants: `constants/types.js` (type color map), `constants/pokemon.js` (`MAX_POKEMON_ID`).
 
 ## Branches (do NOT reimplement existing work)
 
 - `master` — stable baseline (remote default).
 - `feature/pokemon-modal` — Phases 1-6 lived here (modal FLIP, "Ver más detalles", evolution chain, search, page cache, filters).
 - `feature/detail-fullview` — descended from design-system + pokemon-modal. Redesigned `PokemonDetail` as a full themed dashboard.
-- `feature/detail-tabs-shiny` — **current working branch**. Adds URL-driven tabs and the Normal/Shiny appearance selector to `PokemonDetail`.
+- `feature/detail-tabs-shiny` — Phase 1 (URL-driven tabs + Normal/Shiny) lived here.
+- `feature/detail-expanded-overview` — **current working branch**. Adds the Phase 2 Expanded Overview (helpers, type-relation data layer, orchestration, final UI).
 - Other branches (reference only): `feature/detail-modal` (modal overlay), `feature/detail-state` (conditional full-screen via state), `feature/detail-router` (real routing), `feature/cache-persistence`, `feature/design-system`, `feature/expandable-card`, `modernizacion`.
 
 ## Design system (applied, in master)
@@ -117,12 +118,13 @@ Base Pokémon loading and evolution loading are independent. An evolution-fetch 
 - [x] **Favorites (persisted)**: `favorites: string[]` in pokeState with `toggleFavorite`, persisted in IndexedDB + hydrated (`loadFavorites`/`hydrateFavorites` in main.jsx). `FavoriteButton.jsx` on PokemonCard and inside PokemonModal (stopPropagation on click/keydown so it never opens the modal; filled/outline; aria-pressed, focusable). "Solo favoritos" chip in FilterBar, combines with search/filters, reflected in URL (`?fav=1`). Commit bdfe276.
 - [x] **Design system**: tokens, Card primitive, unified brand-500 accent, AA badges, shared StatBlock. Commits 9ee32bd..d321599, recorded in docs 5fd421c.
 - [x] **Detail tabs + Normal/Shiny (Fase 1)** (`feature/detail-tabs-shiny`): URL-driven `DetailTabs` (overview/stats/evolution/moves), accessible tab buttons with native activation, global arrow-listener ignores the tablist, persistent `PokemonAppearanceToggle`, `src/utils/sprites.js` resolver, content redistributed into `PokemonDetailPanels`, and independent evolution loading/error. Commits e18b1a1, ed587aa, db01340.
+- [x] **Phase 2 — Expanded Overview (Fase 2)** (`feature/detail-expanded-overview`): English Pokédex Entry, Category, Height/Weight (métrico), Base Catch Rate, Habitat, Egg Groups, Regular/Hidden Abilities y Type Matchups defensivos (4×/2×/½×/¼×/0×). Helpers puros `src/utils/pokemonDetails.js` + `src/utils/typeMatchups.js`; capa de datos `typeRelationsCache` (Redux + IndexedDB) con `fetchTypeRelations` cache-first y deduplicación; orquestación route-safe en `PokemonDetail` con token de secuencia; UI final en `PokemonDetailPanels.jsx` + `TypeMatchups.jsx`. Commits 8d1fcfd, d4187c4, d161cc7, 339923d.
 
-## Project state (as of commit db01340, branch `feature/detail-tabs-shiny`)
+## Project state (as of commit 339923d, branch `feature/detail-expanded-overview`)
 
-Phase 1 of the tabs/shiny work is complete and committed on this branch. The detail page now
-has URL-driven tabs and a persistent Normal/Shiny hero selector (see "PokemonDetail tabs &
-appearance" and "Panel architecture" above).
+Phase 1 (URL-driven tabs + Normal/Shiny) and Phase 2 (Expanded Overview) are complete and
+committed on this branch. The detail Overview now shows English Pokédex Entry, biological data,
+regular/hidden abilities, and defensive Type Matchups. See "Phase 2 — Expanded Overview" below.
 
 Dashboard history on the preceding `feature/detail-fullview` branch (reference):
 
@@ -139,10 +141,151 @@ Pending on `feature/detail-fullview` (now superseded by the tabs/shiny redesign)
 - **Step 3 — fit-on-screen polish**: ensure the dashboard fits without excessive scroll on common viewports.
 - **Step 4 — app-wide polish**: persist theme (`Toggle.jsx`), honor URL filter params on direct detail visits (currently `useAdjacentPokemon` ignores them), misc cleanup.
 
-## Next planned phase
+## Phase 2 — Expanded Overview
 
-**Phase 2 — Expanded Overview.** Planned content: Category, Base Catch Rate, Habitat, Egg Groups,
-regular and hidden abilities, and calculated Type Matchups (weaknesses, resistances, immunities).
+**Estado: completada** en la rama `feature/detail-expanded-overview`.
+
+Commits:
+
+- `8d1fcfd` — helpers puros de Overview y Type Matchups.
+- `d4187c4` — caché y fetching de relaciones defensivas de tipo.
+- `d161cc7` — orquestación en `PokemonDetail`.
+- `339923d` — interfaz final del Expanded Overview.
+
+### Contenido final del Overview
+
+- English Pokédex Entry (flavor text en inglés).
+- Category.
+- Height (decímetros -> metros).
+- Weight (hectogramos -> kilogramos).
+- Base Catch Rate.
+- Habitat.
+- Egg Groups.
+- Regular Abilities.
+- Hidden Abilities.
+- Defensive Type Matchups: 4× Weaknesses, 2× Weaknesses, ½× Resistances, ¼× Resistances, 0× Immunities.
+- Los resultados neutrales (multiplicador 1×) permanecen internos y **no** se renderizan.
+
+### Helpers puros
+
+`src/utils/pokemonDetails.js`:
+
+- Selección de flavor text en inglés (`language.name === 'en'`) y normalización de whitespace (form-feed, saltos de línea, espacios repetidos).
+- Selección de Category en inglés con fallback `Unknown`.
+- `humanizeIdentifier` (guiones -> espacios, capitalización por palabra).
+- Formateo de Egg Groups (overrides mínimos, p. ej. `humanshape` -> `Human-Like`, `water1` -> `Water 1`).
+- Separación de habilidades regulares/ocultas exclusivamente por `is_hidden`.
+- Formateo de Base Catch Rate (`45 / 255 · 17.6%`); valores inválidos o fuera de rango -> unavailable.
+
+`src/utils/typeMatchups.js`:
+
+- Cálculo puro de multiplicadores defensivos.
+- Usa los tipos canónicos de `src/constants/types.js` como universo atacante (18 tipos).
+- Soporta Pokémon de un solo tipo y de doble tipo.
+- Multiplica modificadores defensivos (`multipliers[type] *= ...`); **nunca** concatena listas de debilidades/resistencias.
+- Rechaza input incompleto (`complete: false`, `matchups: null`) sin producir resultados parciales.
+- Mantiene los resultados neutrales internamente (no se renderizan).
+- Conserva el orden canónico de `TYPES`.
+
+### Capa de datos de relaciones defensivas
+
+- `src/slices/pokeState.js`: `typeRelationsCache` (claves normalizadas lowercase).
+- `src/slices/thunks.js`: `fetchTypeRelations(typeName)` — cache-first, deduplicación de requests en vuelo (`inFlightTypeRelations`), normaliza la clave con `trim().toLowerCase()`, y no despacha acciones globales de error ni loading para Type Matchups.
+- `src/utils/cache.js`: persistencia IndexedDB + saneo en hidratación; las entradas malformadas se descartan (`isValidDefensiveRelations` / `sanitizeTypeRelationsCache`).
+- `src/main.jsx`: hidratación de `typeRelationsCache` antes del render.
+
+Solo se almacena la forma defensiva mínima:
+
+- `double_damage_from`
+- `half_damage_from`
+- `no_damage_from`
+
+Las relaciones ofensivas **nunca** deben usarse para el cálculo defensivo:
+
+- `double_damage_to`
+- `half_damage_to`
+- `no_damage_to`
+
+### Regla de multiplicadores
+
+`finalMultiplier = multiplierTypeA × multiplierTypeB`
+
+Ejemplos: `2 × 2 = 4×`, `2 × 0.5 = 1×`, `0.5 × 0.5 = 0.25×`, `0 × 2 = 0×`.
+
+Reglas:
+
+- Nunca concatenar listas de debilidades o resistencias.
+- Nunca mostrar resultados parciales cuando falta una relación defensiva requerida.
+- Un recurso de tipo exitoso puede permanecer cacheado aunque otro tipo falle.
+
+### Orquestación en `PokemonDetail`
+
+- Deriva la identidad de ruta normalizada (`normalizedRouteName`).
+- Acepta datos de Pokémon solo si `pokemon.name` coincide con la ruta actual (`isCurrentPokemon` gatea `defensiveTypeKey` y `overviewData`).
+- Acepta Species local o cacheada solo si `species.name` coincide con la ruta actual (`effectiveSpecies`).
+- Usa Species cacheada de la ruta actual si Evolution Chain falla tras haber cacheado Species.
+- Carga Type Relations de forma independiente de Species y Evolution.
+- Usa estados scoped locales: `idle`, `loading`, `success`, `error`.
+- Usa un token de secuencia compartido (`typeMatchupsSequenceRef`) para: carga automática, Retry, navegación rápida, múltiples retries y unmount.
+- Las ejecuciones obsoletas pueden poblar la caché de Redux pero no actualizan estado local obsoleto.
+- Retry afecta solo a Type Matchups; no recarga Pokémon, Species, Evolution, Abilities ni Moves.
+
+### UI
+
+`src/components/PokemonDetailPanels.jsx`:
+
+- Composición del Expanded Overview.
+- Pokédex Entry full-width.
+- Biological Data y Abilities como tarjetas desktop de ancho igual con alturas naturales independientes (`md:flex-row md:items-start`).
+- Mobile en una sola columna.
+- Usa las habilidades preparadas (Regular/Hidden) en vez de los datos crudos de abilities.
+
+`src/components/TypeMatchups.jsx`:
+
+- Presentacional únicamente: sin fetching, sin dispatch de Redux, sin IndexedDB, sin cálculo de multiplicadores.
+- Maneja `idle`, `loading`, `success`, `error`, Retry, unavailable y grupos vacíos.
+- No renderiza el grupo neutral.
+- Muestra nombre de tipo (capitalizado) y multiplicador textual.
+- Usa el orden canónico recibido del helper (no reordena).
+- Grid responsive: 1 columna (mobile), 2 (small), 3 (large), 5 (extra-large).
+
+Aislamiento:
+
+- Un fallo de Type Matchups no bloquea hero, datos biológicos del Overview, Stats, Evolution & Forms, Moves, Normal/Shiny, navegación, tema ni footer.
+- Un fallo de Evolution no elimina Species cacheada del Overview.
+- Hidden Abilities, Habitat, Egg Groups, flavor text u otros campos ausentes usan fallbacks en inglés scoped y no se tratan como fallos de página.
+
+### Archivos de la Fase 2
+
+Creados:
+
+- `src/components/TypeMatchups.jsx`
+- `src/utils/pokemonDetails.js`
+- `src/utils/typeMatchups.js`
+
+Modificados:
+
+- `src/components/PokemonDetailPanels.jsx`
+- `src/main.jsx`
+- `src/pages/PokemonDetail.jsx`
+- `src/slices/pokeState.js`
+- `src/slices/thunks.js`
+- `src/utils/cache.js`
+
+### Fuera de alcance
+
+La Fase 2 **no** implementó:
+
+- advanced/max stats;
+- Mega o formas especiales;
+- move fetching;
+- sprites animados;
+- descripciones de abilities;
+- cobertura ofensiva;
+- calculadora de EV/IV/Nature;
+- traducción global al inglés;
+- TypeScript;
+- dependencias nuevas.
 
 ## Remaining ideas (deferred)
 
@@ -151,6 +294,7 @@ regular and hidden abilities, and calculated Type Matchups (weaknesses, resistan
 - Stats radar chart, type-effectiveness table.
 - List virtualization (`react-window`).
 - Retry/error boundary refinements (ErrorBoundary exists since 3459f08).
+- **Known observation (non-Phase-2)**: Previous/Next navigation may preserve scroll position; under some scroll positions the sticky header can temporarily overlap the BackButton. This behavior predates Phase 2 and was not changed in Expanded Overview. Defer it to a future navigation or UI-quality task.
 
 ## Definition of done (per phase)
 

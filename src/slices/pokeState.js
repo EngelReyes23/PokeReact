@@ -20,7 +20,8 @@ const initialState = {
   favorites: [],
   favOnly: false,
   typeCache: {},
-  generationCache: {}
+  generationCache: {},
+  typeRelationsCache: {}
 }
 
 export const pokeState = createSlice({
@@ -100,6 +101,13 @@ export const pokeState = createSlice({
     },
     hydrateGenerationCache: (state, action) => {
       state.generationCache = action.payload
+    },
+    setTypeRelationsCache: (state, action) => {
+      const { type, data } = action.payload
+      state.typeRelationsCache[type] = data
+    },
+    hydrateTypeRelationsCache: (state, action) => {
+      state.typeRelationsCache = action.payload
     }
   }
 })
@@ -124,5 +132,7 @@ export const {
   setTypeCache,
   hydrateTypeCache,
   setGenerationCache,
-  hydrateGenerationCache
+  hydrateGenerationCache,
+  setTypeRelationsCache,
+  hydrateTypeRelationsCache
 } = pokeState.actions
