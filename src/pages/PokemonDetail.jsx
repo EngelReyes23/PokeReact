@@ -25,7 +25,8 @@ import {
   getPokemonCategory,
   formatCatchRate,
   formatEggGroups,
-  splitAbilities
+  splitAbilities,
+  humanizeIdentifier
 } from '../utils/pokemonDetails'
 import { calculateTypeMatchups } from '../utils/typeMatchups'
 
@@ -240,7 +241,9 @@ export const PokemonDetail = () => {
       height: pokemon.height,
       weight: pokemon.weight,
       captureRate,
-      habitat: effectiveSpecies?.habitat?.name || null,
+      habitat: effectiveSpecies?.habitat?.name
+        ? humanizeIdentifier(effectiveSpecies.habitat.name)
+        : null,
       eggGroups,
       regularAbilities,
       hiddenAbilities,
@@ -388,7 +391,7 @@ export const PokemonDetail = () => {
     )
   }
 
-  const { id, types, stats, abilities } = pokemon
+  const { id, types, stats } = pokemon
   const pokemonTypes = types.map((type) => type.type.name)
   const image = resolvePokemonSprite(pokemon.sprites, appearance, imageNotFound)
   const hasShiny = hasShinySprite(pokemon.sprites)
@@ -403,7 +406,6 @@ export const PokemonDetail = () => {
             flavorText={overviewData?.flavorText}
             height={overviewData?.height}
             weight={overviewData?.weight}
-            abilities={abilities}
             pokemonTypes={pokemonTypes}
             category={overviewData?.category}
             captureRate={overviewData?.captureRate}
